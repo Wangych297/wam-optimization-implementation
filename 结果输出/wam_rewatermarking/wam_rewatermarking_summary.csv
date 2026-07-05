@@ -1,0 +1,7 @@
+﻿scheme,attack,mean_msg_a_accuracy,mean_msg_b_accuracy,both_success_rate,mean_slot_a_pixels,mean_slot_b_pixels,mean_psnr_watermarked,num_images
+disjoint_append_side_regions,jpeg_q50,0.950000,0.925000,0.600000,17973.4,13070.8,39.0893,5
+disjoint_append_side_regions,none,1.000000,1.000000,1.000000,19416.4,15329.4,39.0893,5
+disjoint_append_side_regions,resize_0.5_jpeg_q50,0.950000,0.931250,0.800000,18352.2,13634.2,39.0893,5
+overlap_replace_same_region,jpeg_q50,0.518750,0.950000,0.000000,16976.0,16976.0,42.0668,5
+overlap_replace_same_region,none,0.531250,1.000000,0.000000,19323.2,19323.2,42.0668,5
+overlap_replace_same_region,resize_0.5_jpeg_q50,0.518750,0.925000,0.000000,16776.8,16776.8,42.0668,5
