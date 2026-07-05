@@ -1,0 +1,10 @@
+﻿scheme,localizer,mean_global_f1,mean_global_iou,mean_covered_f1,mean_covered_iou,mean_tamper_coverage,mean_bit_accuracy
+dwsf_q30_5block,clean_missing,0.409275,0.258655,0.986225,0.973278,0.263503,1.000000
+dwsf_q30_5block,expected_missing,0.393517,0.246309,0.968294,0.939357,0.253519,1.000000
+dwsf_q30_5block,prob_drop,0.420431,0.267545,0.985547,0.971861,0.271703,1.000000
+dwsf_q50_5block,clean_missing,0.620835,0.451307,0.969305,0.942088,0.475606,1.000000
+dwsf_q50_5block,expected_missing,0.611915,0.442022,0.958566,0.922282,0.470790,1.000000
+dwsf_q50_5block,prob_drop,0.635645,0.466754,0.973085,0.948559,0.486693,1.000000
+single_center_50pct,clean_missing,0.674786,0.592577,0.805798,0.786337,0.801358,0.997500
+single_center_50pct,expected_missing,0.673509,0.591175,0.804768,0.784331,0.800405,0.997500
+single_center_50pct,prob_drop,0.695941,0.615839,0.825536,0.808216,0.802378,0.997500
