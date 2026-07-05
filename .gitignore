@@ -1,0 +1,22 @@
+# Large generated artifacts
+models/
+datasets/
+results_raw/
+*.pth
+*.pt
+*.ckpt
+*.onnx
+*.zip
+*.tar
+*.tar.gz
+
+# Python/runtime noise
+__pycache__/
+.pytest_cache/
+.venv/
+venv/
+
+# Temporary outputs
+tmp/
+*.log
+
