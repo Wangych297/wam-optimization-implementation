@@ -19,4 +19,5 @@ venv/
 # Temporary outputs
 tmp/
 *.log
-
+*.pid
+*.tmp
