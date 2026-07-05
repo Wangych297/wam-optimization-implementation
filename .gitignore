@@ -21,3 +21,6 @@ tmp/
 *.log
 *.pid
 *.tmp
+
+# Keep generated visuals locally; commit compact metrics and selected figures only.
+结果输出/*/visuals/*.png
