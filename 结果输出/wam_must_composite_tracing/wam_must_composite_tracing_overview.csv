@@ -1,0 +1,16 @@
+﻿scheme,decode_method,mean_source_accuracy,min_source_accuracy,source_success_rate,mean_composite_psnr
+dwsf_q50_s2.5,global_full_canvas,0.279297,0.000000,0.000000,44.2526
+dwsf_q50_s2.5,must_mer_resize,0.480469,0.000000,0.250000,44.2526
+dwsf_q50_s2.5,oracle_box_raw,0.477539,0.000000,0.250000,44.2526
+dwsf_q50_s3.0,global_full_canvas,0.276367,0.000000,0.000000,42.7517
+dwsf_q50_s3.0,must_mer_resize,0.479492,0.000000,0.250000,42.7517
+dwsf_q50_s3.0,oracle_box_raw,0.500000,0.000000,0.250000,42.7517
+full_material_s2.5,global_full_canvas,0.265625,0.000000,0.000000,40.6792
+full_material_s2.5,must_mer_resize,0.587891,0.000000,0.250000,40.6792
+full_material_s2.5,oracle_box_raw,0.561523,0.000000,0.250000,40.6792
+full_material_s3.0,global_full_canvas,0.270508,0.000000,0.000000,39.1471
+full_material_s3.0,must_mer_resize,0.626953,0.000000,0.250000,39.1471
+full_material_s3.0,oracle_box_raw,0.618164,0.000000,0.250000,39.1471
+single_center50_s2.5,global_full_canvas,0.147461,0.000000,0.000000,42.2053
+single_center50_s2.5,must_mer_resize,0.559570,0.000000,0.250000,42.2053
+single_center50_s2.5,oracle_box_raw,0.533203,0.000000,0.250000,42.2053
