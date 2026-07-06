@@ -9,6 +9,7 @@ results_raw/
 *.zip
 *.tar
 *.tar.gz
+original_code/**/checkpoints/*.pth
 
 # Python/runtime noise
 __pycache__/

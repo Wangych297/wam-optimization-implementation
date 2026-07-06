@@ -1,4 +1,4 @@
-# DWSF 与 TrustMark 强度组合 v1
+﻿# DWSF 与 TrustMark 强度组合 v1
 
 ## 目的
 
@@ -11,7 +11,7 @@
 
 ## 脚本
 
-- 脚本：`脚本草稿/wam_combined_dwsf_strength.py`
+- 脚本：`src\wam_optimization/wam_combined_dwsf_strength.py`
 - 输出目录：`结果输出/wam_combined_dwsf_strength/`
 - 明细文件：`结果输出/wam_combined_dwsf_strength/wam_combined_dwsf_strength_metrics.csv`
 - 汇总文件：`结果输出/wam_combined_dwsf_strength/wam_combined_dwsf_strength_summary.csv`
@@ -21,9 +21,9 @@
 
 ```powershell
 $task='C:\Users\86155\Desktop\信息安全\大作业\WAM-DWSF鲁棒水印任务'
-$repo='C:\Users\86155\Desktop\信息安全\大作业\参考论文\鲁棒图像水印资料\code\Watermark-Anything'
+$repo='.\original_code\Watermark-Anything'
 $py='C:\Users\86155\miniconda3\envs\bamboo\python.exe'
-& $py "$task\脚本草稿\wam_combined_dwsf_strength.py" `
+& $py "$task\src\wam_optimization\wam_combined_dwsf_strength.py" `
   --wam-root $repo `
   --checkpoint "$repo\checkpoints\wam_mit.pth" `
   --params "$repo\checkpoints\params.json" `

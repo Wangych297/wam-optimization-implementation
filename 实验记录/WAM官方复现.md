@@ -1,4 +1,4 @@
-# WAM 官方复现记录
+﻿# WAM 官方复现记录
 
 ## 目标
 
@@ -15,23 +15,23 @@
 
 ## 代码与权重
 
-- WAM 官方代码目录：`C:\Users\86155\Desktop\信息安全\大作业\参考论文\鲁棒图像水印资料\code\Watermark-Anything`
+- WAM 官方代码目录：`.\original_code\Watermark-Anything`
 - 权重：`checkpoints\wam_mit.pth`
 - 权重来源：`https://dl.fbaipublicfiles.com/watermark_anything/wam_mit.pth`
 - 权重大小：377,825,938 bytes
 - 权重 SHA256：`90ef232384e023bd63245eb0c131abd69d2afc7b8f17a71ccedceb542bf009e2`
 - 参数文件：`checkpoints\params.json`
-- 复现脚本：`脚本草稿\wam_official_repro.py`
+- 复现脚本：`src\wam_optimization\wam_official_repro.py`
 
 ## 运行命令
 
 ```powershell
 & "C:\Users\86155\miniconda3\envs\bamboo\python.exe" `
-  "C:\Users\86155\Desktop\信息安全\大作业\WAM-DWSF鲁棒水印任务\脚本草稿\wam_official_repro.py" `
-  --wam-root "C:\Users\86155\Desktop\信息安全\大作业\参考论文\鲁棒图像水印资料\code\Watermark-Anything" `
-  --checkpoint "C:\Users\86155\Desktop\信息安全\大作业\参考论文\鲁棒图像水印资料\code\Watermark-Anything\checkpoints\wam_mit.pth" `
-  --params "C:\Users\86155\Desktop\信息安全\大作业\参考论文\鲁棒图像水印资料\code\Watermark-Anything\checkpoints\params.json" `
-  --image-dir "C:\Users\86155\Desktop\信息安全\大作业\参考论文\鲁棒图像水印资料\code\Watermark-Anything\assets\images" `
+  "C:\Users\86155\Desktop\信息安全\大作业\WAM-DWSF鲁棒水印任务\src\wam_optimization\wam_official_repro.py" `
+  --wam-root ".\original_code\Watermark-Anything" `
+  --checkpoint ".\original_code\Watermark-Anything\checkpoints\wam_mit.pth" `
+  --params ".\original_code\Watermark-Anything\checkpoints\params.json" `
+  --image-dir ".\original_code\Watermark-Anything\assets\images" `
   --out-dir "C:\Users\86155\Desktop\信息安全\大作业\WAM-DWSF鲁棒水印任务\结果输出\wam_official_repro" `
   --limit 3 `
   --mask-ratio 0.5 `

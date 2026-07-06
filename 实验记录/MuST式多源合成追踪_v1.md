@@ -1,4 +1,4 @@
-# MuST 式多源合成追踪 v1
+﻿# MuST 式多源合成追踪 v1
 
 ## 目的
 
@@ -35,9 +35,9 @@
 
 ## 脚本
 
-- 基础多源追踪：`脚本草稿/wam_must_composite_tracing.py`
-- 8-bit source ID + rep4 冗余：`脚本草稿/wam_must_composite_tracing_ecc.py`
-- 注册源 ID 最近码字匹配：`脚本草稿/wam_must_codebook_match.py`
+- 基础多源追踪：`src\wam_optimization/wam_must_composite_tracing.py`
+- 8-bit source ID + rep4 冗余：`src\wam_optimization/wam_must_composite_tracing_ecc.py`
+- 注册源 ID 最近码字匹配：`src\wam_optimization/wam_must_codebook_match.py`
 
 ## 关键结果一：MER 重同步是必要的
 

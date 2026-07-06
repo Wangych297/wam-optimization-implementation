@@ -1,4 +1,4 @@
-# ECC 编码变体 v1
+﻿# ECC 编码变体 v1
 
 ## 目的
 
@@ -12,7 +12,7 @@
 
 ## 实验设置
 
-- 脚本：`脚本草稿/wam_payload_ecc_variants.py`。
+- 脚本：`src\wam_optimization/wam_payload_ecc_variants.py`。
 - 输出：`结果输出/wam_payload_ecc_variants/`。
 - 主模型：WAM 官方 MIT 权重。
 - 主方案：`DWSF Q=30%, 5 blocks, scaling_w=2.5`。
@@ -36,11 +36,11 @@
 
 ```powershell
 C:\Users\86155\miniconda3\envs\bamboo\python.exe `
-  脚本草稿\wam_payload_ecc_variants.py `
-  --wam-root C:\Users\86155\Desktop\信息安全\大作业\参考论文\鲁棒图像水印资料\code\Watermark-Anything `
-  --checkpoint C:\Users\86155\Desktop\信息安全\大作业\参考论文\鲁棒图像水印资料\code\Watermark-Anything\checkpoints\wam_mit.pth `
-  --params C:\Users\86155\Desktop\信息安全\大作业\参考论文\鲁棒图像水印资料\code\Watermark-Anything\checkpoints\params.json `
-  --image-dir C:\Users\86155\Desktop\信息安全\大作业\参考论文\鲁棒图像水印资料\code\Watermark-Anything\assets\images `
+  src\wam_optimization\wam_payload_ecc_variants.py `
+  --wam-root .\original_code\Watermark-Anything `
+  --checkpoint .\original_code\Watermark-Anything\checkpoints\wam_mit.pth `
+  --params .\original_code\Watermark-Anything\checkpoints\params.json `
+  --image-dir .\original_code\Watermark-Anything\assets\images `
   --out-dir 结果输出\wam_payload_ecc_variants `
   --limit 5 `
   --scale 2.5 `

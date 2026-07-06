@@ -1,4 +1,4 @@
-# ECC 消息冗余编码 v1
+﻿# ECC 消息冗余编码 v1
 
 ## 目的
 
@@ -11,7 +11,7 @@ TrustMark 论文提到非完美 bit accuracy 可以通过 error correcting code 
 
 ## 脚本
 
-- 脚本：`脚本草稿/wam_payload_ecc_eval.py`
+- 脚本：`src\wam_optimization/wam_payload_ecc_eval.py`
 - 输出目录：`结果输出/wam_payload_ecc/`
 - 明细文件：`结果输出/wam_payload_ecc/wam_payload_ecc_metrics.csv`
 - 汇总文件：`结果输出/wam_payload_ecc/wam_payload_ecc_summary.csv`
@@ -20,9 +20,9 @@ TrustMark 论文提到非完美 bit accuracy 可以通过 error correcting code 
 
 ```powershell
 $task='C:\Users\86155\Desktop\信息安全\大作业\WAM-DWSF鲁棒水印任务'
-$repo='C:\Users\86155\Desktop\信息安全\大作业\参考论文\鲁棒图像水印资料\code\Watermark-Anything'
+$repo='.\original_code\Watermark-Anything'
 $py='C:\Users\86155\miniconda3\envs\bamboo\python.exe'
-& $py "$task\脚本草稿\wam_payload_ecc_eval.py" `
+& $py "$task\src\wam_optimization\wam_payload_ecc_eval.py" `
   --wam-root $repo `
   --checkpoint "$repo\checkpoints\wam_mit.pth" `
   --params "$repo\checkpoints\params.json" `

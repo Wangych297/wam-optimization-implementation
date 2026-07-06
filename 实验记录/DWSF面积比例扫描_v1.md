@@ -1,4 +1,4 @@
-# DWSF 面积比例扫描 v1
+﻿# DWSF 面积比例扫描 v1
 
 ## 目的
 
@@ -15,7 +15,7 @@
 
 - 主模型：WAM 官方 MIT 权重。
 - 运行环境：`bamboo` conda 环境，RTX 4060 Laptop GPU。
-- 脚本：`脚本草稿/wam_dwsf_area_sweep.py`。
+- 脚本：`src\wam_optimization/wam_dwsf_area_sweep.py`。
 - 输出：`结果输出/wam_dwsf_area_sweep/`。
 - 图像：WAM 官方 5 张示例图。
 - 水印消息：固定随机 32-bit 消息。
@@ -40,11 +40,11 @@
 
 ```powershell
 C:\Users\86155\miniconda3\envs\bamboo\python.exe `
-  脚本草稿\wam_dwsf_area_sweep.py `
-  --wam-root C:\Users\86155\Desktop\信息安全\大作业\参考论文\鲁棒图像水印资料\code\Watermark-Anything `
-  --checkpoint C:\Users\86155\Desktop\信息安全\大作业\参考论文\鲁棒图像水印资料\code\Watermark-Anything\checkpoints\wam_mit.pth `
-  --params C:\Users\86155\Desktop\信息安全\大作业\参考论文\鲁棒图像水印资料\code\Watermark-Anything\checkpoints\params.json `
-  --image-dir C:\Users\86155\Desktop\信息安全\大作业\参考论文\鲁棒图像水印资料\code\Watermark-Anything\assets\images `
+  src\wam_optimization\wam_dwsf_area_sweep.py `
+  --wam-root .\original_code\Watermark-Anything `
+  --checkpoint .\original_code\Watermark-Anything\checkpoints\wam_mit.pth `
+  --params .\original_code\Watermark-Anything\checkpoints\params.json `
+  --image-dir .\original_code\Watermark-Anything\assets\images `
   --out-dir 结果输出\wam_dwsf_area_sweep `
   --limit 5 `
   --scale 2.5 `

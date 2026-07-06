@@ -1,4 +1,4 @@
-# TrustMark 式强度-质量权衡 v1
+﻿# TrustMark 式强度-质量权衡 v1
 
 ## 目的
 
@@ -16,7 +16,7 @@ TrustMark 的可迁移思想：
 
 ## 脚本
 
-- 脚本：`脚本草稿/wam_trustmark_strength_sweep.py`
+- 脚本：`src\wam_optimization/wam_trustmark_strength_sweep.py`
 - 输出目录：`结果输出/wam_trustmark_strength/`
 - 明细文件：`结果输出/wam_trustmark_strength/wam_trustmark_strength_metrics.csv`
 - 汇总文件：`结果输出/wam_trustmark_strength/wam_trustmark_strength_summary.csv`
@@ -26,9 +26,9 @@ TrustMark 的可迁移思想：
 
 ```powershell
 $task='C:\Users\86155\Desktop\信息安全\大作业\WAM-DWSF鲁棒水印任务'
-$repo='C:\Users\86155\Desktop\信息安全\大作业\参考论文\鲁棒图像水印资料\code\Watermark-Anything'
+$repo='.\original_code\Watermark-Anything'
 $py='C:\Users\86155\miniconda3\envs\bamboo\python.exe'
-& $py "$task\脚本草稿\wam_trustmark_strength_sweep.py" `
+& $py "$task\src\wam_optimization\wam_trustmark_strength_sweep.py" `
   --wam-root $repo `
   --checkpoint "$repo\checkpoints\wam_mit.pth" `
   --params "$repo\checkpoints\params.json" `

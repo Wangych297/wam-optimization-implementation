@@ -1,4 +1,4 @@
-# WAM 攻击评测基线
+﻿# WAM 攻击评测基线
 
 ## 目标
 
@@ -31,7 +31,7 @@
 
 ## 输出文件
 
-- 评测脚本：`脚本草稿\wam_attack_eval.py`
+- 评测脚本：`src\wam_optimization\wam_attack_eval.py`
 - 逐样本指标：`结果输出\wam_attack_eval\wam_attack_eval_metrics.csv`
 - 按攻击汇总：`结果输出\wam_attack_eval\wam_attack_eval_summary.csv`
 - 本地可视化目录：`结果输出\wam_attack_eval\visuals`

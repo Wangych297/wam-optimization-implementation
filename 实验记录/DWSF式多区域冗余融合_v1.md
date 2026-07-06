@@ -1,4 +1,4 @@
-# DWSF 式多区域冗余融合 v1
+﻿# DWSF 式多区域冗余融合 v1
 
 ## 来源论文思想
 
@@ -21,7 +21,7 @@ DWSF 的核心思想包括：
   - `component_majority`：对预测水印 mask 做连通区域分割，每个组件独立解码后多数投票。
   - `component_confidence_weighted`：对组件解码结果按置信度和组件像素数加权融合。
 
-脚本：`脚本草稿\wam_dwsf_redundant_eval.py`
+脚本：`src\wam_optimization\wam_dwsf_redundant_eval.py`
 
 输出：
 

@@ -1,4 +1,4 @@
-# MBRS 式多分支 JPEG 解码 v1
+﻿# MBRS 式多分支 JPEG 解码 v1
 
 ## 目的
 
@@ -21,7 +21,7 @@ DWSF 的可迁移思想：
 
 ## 脚本
 
-- 脚本：`脚本草稿/wam_mbrs_multibranch_decode.py`
+- 脚本：`src\wam_optimization/wam_mbrs_multibranch_decode.py`
 - 输出目录：`结果输出/wam_mbrs_multibranch/`
 - 候选分支文件：`结果输出/wam_mbrs_multibranch/wam_mbrs_multibranch_candidates.csv`
 - 方法对比文件：`结果输出/wam_mbrs_multibranch/wam_mbrs_multibranch_methods.csv`
@@ -31,9 +31,9 @@ DWSF 的可迁移思想：
 
 ```powershell
 $task='C:\Users\86155\Desktop\信息安全\大作业\WAM-DWSF鲁棒水印任务'
-$repo='C:\Users\86155\Desktop\信息安全\大作业\参考论文\鲁棒图像水印资料\code\Watermark-Anything'
+$repo='.\original_code\Watermark-Anything'
 $py='C:\Users\86155\miniconda3\envs\bamboo\python.exe'
-& $py "$task\脚本草稿\wam_mbrs_multibranch_decode.py" `
+& $py "$task\src\wam_optimization\wam_mbrs_multibranch_decode.py" `
   --wam-root $repo `
   --checkpoint "$repo\checkpoints\wam_mit.pth" `
   --params "$repo\checkpoints\params.json" `
