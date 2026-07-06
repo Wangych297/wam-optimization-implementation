@@ -1,9 +1,3 @@
 # Results Output
 
-当前历史结果仍保存在中文目录：
-
-```text
-结果输出/
-```
-
-保留本目录是为了后续如果需要切换到英文工程目录，可以逐步迁移，不影响现有实验记录和运行入口。
+Generated metrics, summaries, and selected visual artifacts are stored by experiment module in this directory.

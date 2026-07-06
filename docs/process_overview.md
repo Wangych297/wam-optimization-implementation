@@ -1,29 +1,29 @@
-# Process Overview
+# Experiment Overview
 
-## 阶段 1：复现主论文
+## Baseline Reproduction
 
-先用 WAM 官方代码、官方参数和官方权重跑通单水印和多水印推理，确认本机环境可复现。
+Runs the baseline embedding and extraction pipeline with local configs, images, and checkpoint.
 
-## 阶段 2：建立攻击基线
+## Attack Benchmark
 
-对原始 WAM 做 JPEG、resize、crop、occlusion、partial removal 等攻击，找出薄弱点。
+Evaluates compression, resizing, cropping, occlusion, and local removal attacks.
 
-## 阶段 3：DWSF 式区域改进
+## Spatial Redundancy
 
-把单区域嵌入改成多区域分散嵌入，并扫描总面积比例 Q 和块数。
+Evaluates multi-region embedding, distributed layouts, coverage search, and region synchronization.
 
-## 阶段 4：TrustMark 式强度权衡
+## Robustness Profiles
 
-扫描 `scaling_w`，再和 DWSF 区域策略组合，形成质量和鲁棒性的可调方案。
+Profiles embedding strength and spatial-strength combinations under quality and robustness tradeoffs.
 
-## 阶段 5：平台变换模式选择
+## Transform Profiles
 
-参考 Robust-Wide / FlexMark，用真实编辑和平台压缩变换筛选最终三档模式。
+Evaluates platform-style image transformations and recommended operating modes.
 
-## 阶段 6：附加安全应用
+## Security Applications
 
-继续验证主动篡改定位、二次水印、多源合成图追踪等信息安全应用。
+Includes tamper localization, provenance update, and multi-source tracing.
 
-## 阶段 7：保留负结果
+## Auxiliary Modules
 
-记录自适应区域选择、多分支 JPEG、bbox 同步、ECC 变体等探索结果。它们不是主创新，但能说明筛选过程。
+Includes compression recovery, payload coding variants, adaptive region selection, and region synchronization variants.

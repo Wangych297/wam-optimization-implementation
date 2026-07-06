@@ -1,30 +1,22 @@
 # 05 Tamper Localization
 
-## 做什么
+## Purpose
 
-把水印从“证明来源”扩展成“辅助定位哪里被改过”。通过水印检测概率下降估计局部篡改区域。
+在主动破坏水印区域后，根据提取置信度下降定位疑似篡改位置，连接完整性保护和篡改检测任务。
 
-## 论文来源
-
-- EditGuard
-- OmniGuard
-- DWSF
-- WAM
-
-## 对应实现
+## Implementation
 
 ```text
-src/wam_optimization/wam_tamper_localization_eval.py
+watermark_anything/extensions/tamper_localization/localizer.py
 ```
 
-## 输出
+## Output
 
 ```text
-结果输出/wam_tamper_localization
-实验记录/主动篡改定位_v1.md
+results_output/tamper_localization
 ```
 
-## 运行
+## Run
 
 ```powershell
 .\experiments\05_tamper_localization\run.ps1

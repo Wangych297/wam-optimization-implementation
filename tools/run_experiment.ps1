@@ -1,65 +1,65 @@
 param(
     [Parameter(Mandatory=$true)]
     [ValidateSet(
-        "wam_reproduction",
-        "attack_baseline",
-        "dwsf_redundancy_v1",
-        "dwsf_spatial_v2",
-        "dwsf_area_sweep",
-        "strength_sweep",
-        "dwsf_strength_combo",
+        "baseline_reproduction",
+        "attack_benchmark",
+        "redundant_regions",
+        "distributed_layout",
+        "coverage_search",
+        "strength_search",
+        "spatial_strength_profile",
         "platform_modes",
         "tamper_localization",
-        "rewatermarking",
-        "must_source_tracing",
-        "mbrs_multibranch",
-        "payload_ecc",
-        "payload_ecc_variants",
-        "adaptive_region",
-        "bbox_sync"
+        "provenance_update",
+        "compression_recovery",
+        "repetition_payload",
+        "coding_variants",
+        "adaptive_selector",
+        "region_sync",
+        "source_tracing"
     )]
     [string]$Experiment,
 
     [string]$Python = "C:\Users\86155\miniconda3\envs\bamboo\python.exe",
-    [string]$WamRoot = "",
+    [string]$ProjectRootPath = "",
     [int]$Limit = 5
 )
 
 $ErrorActionPreference = "Stop"
 
 $ProjectRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
-if ([string]::IsNullOrWhiteSpace($WamRoot)) {
-    $WamRoot = Join-Path $ProjectRoot "original_code\Watermark-Anything"
+if ([string]::IsNullOrWhiteSpace($ProjectRootPath)) {
+    $ProjectRootPath = $ProjectRoot
 }
-$WamRoot = (Resolve-Path $WamRoot).Path
+$RunRoot = (Resolve-Path $ProjectRootPath).Path
 
-$Checkpoint = Join-Path $WamRoot "checkpoints\wam_mit.pth"
-$Params = Join-Path $WamRoot "checkpoints\params.json"
-$ImageDir = Join-Path $WamRoot "assets\images"
-$SrcDir = Join-Path $ProjectRoot "src\wam_optimization"
-$OutRoot = Join-Path $ProjectRoot "结果输出"
+$Checkpoint = Join-Path $RunRoot "checkpoints\wam_mit.pth"
+$Params = Join-Path $RunRoot "checkpoints\params.json"
+$ImageDir = Join-Path $RunRoot "assets\images"
+$ModuleRoot = Join-Path $ProjectRoot "watermark_anything\extensions"
+$OutRoot = Join-Path $ProjectRoot "results_output"
 
 if (!(Test-Path $Python)) {
     throw "Python not found: $Python"
 }
 if (!(Test-Path $Checkpoint)) {
-    throw "WAM checkpoint not found: $Checkpoint. Put wam_mit.pth under original_code\Watermark-Anything\checkpoints."
+    throw "WAM checkpoint not found: $Checkpoint. Put wam_mit.pth under checkpoints."
 }
 if (!(Test-Path $Params)) {
     throw "WAM params.json not found: $Params"
 }
 
-function Invoke-WamExperiment {
+function Invoke-WatermarkModule {
     param(
-        [string]$Script,
+        [string]$ModulePath,
         [string]$OutName,
         [string[]]$ExtraArgs = @()
     )
-    $scriptPath = Join-Path $SrcDir $Script
+    $moduleFile = Join-Path $ModuleRoot $ModulePath
     $outDir = Join-Path $OutRoot $OutName
     New-Item -ItemType Directory -Force -Path $outDir | Out-Null
-    & $Python $scriptPath `
-        --wam-root $WamRoot `
+    & $Python $moduleFile `
+        --project-root $RunRoot `
         --checkpoint $Checkpoint `
         --params $Params `
         --image-dir $ImageDir `
@@ -69,57 +69,57 @@ function Invoke-WamExperiment {
 }
 
 switch ($Experiment) {
-    "wam_reproduction" {
-        Invoke-WamExperiment "wam_official_repro.py" "wam_official_repro" @("--save-visuals")
+    "baseline_reproduction" {
+        Invoke-WatermarkModule "baseline_reproduction\run.py" "baseline_reproduction" @("--save-visuals")
     }
-    "attack_baseline" {
-        Invoke-WamExperiment "wam_attack_eval.py" "wam_attack_eval" @("--mask-ratio", "0.5")
+    "attack_benchmark" {
+        Invoke-WatermarkModule "attack_benchmark\run.py" "attack_benchmark" @("--mask-ratio", "0.5")
     }
-    "dwsf_redundancy_v1" {
-        Invoke-WamExperiment "wam_dwsf_redundant_eval.py" "wam_dwsf_redundant"
+    "redundant_regions" {
+        Invoke-WatermarkModule "spatial_redundancy\redundant_regions.py" "redundant_regions"
     }
-    "dwsf_spatial_v2" {
-        Invoke-WamExperiment "wam_dwsf_spatial_v2.py" "wam_dwsf_spatial_v2"
+    "distributed_layout" {
+        Invoke-WatermarkModule "spatial_redundancy\distributed_layout.py" "distributed_layout"
     }
-    "dwsf_area_sweep" {
-        Invoke-WamExperiment "wam_dwsf_area_sweep.py" "wam_dwsf_area_sweep" @("--scale", "2.5", "--areas", "10", "20", "25", "30", "50", "--block-counts", "5", "9")
+    "coverage_search" {
+        Invoke-WatermarkModule "spatial_redundancy\coverage_search.py" "coverage_search" @("--scale", "2.5", "--areas", "10", "20", "25", "30", "50", "--block-counts", "5", "9")
     }
-    "strength_sweep" {
-        Invoke-WamExperiment "wam_trustmark_strength_sweep.py" "wam_trustmark_strength" @("--scales", "1.5", "2.0", "2.5", "3.0", "4.0")
+    "strength_search" {
+        Invoke-WatermarkModule "robustness_profiles\strength_search.py" "strength_search" @("--scales", "1.5", "2.0", "2.5", "3.0", "4.0")
     }
-    "dwsf_strength_combo" {
-        Invoke-WamExperiment "wam_combined_dwsf_strength.py" "wam_combined_dwsf_strength" @("--scales", "1.5", "2.0", "2.5", "3.0")
+    "spatial_strength_profile" {
+        Invoke-WatermarkModule "robustness_profiles\spatial_strength_profile.py" "spatial_strength_profile" @("--scales", "1.5", "2.0", "2.5", "3.0")
     }
     "platform_modes" {
-        Invoke-WamExperiment "wam_practical_transform_modes.py" "wam_practical_transform_modes"
+        Invoke-WatermarkModule "transform_profiles\platform_modes.py" "platform_modes"
     }
     "tamper_localization" {
-        Invoke-WamExperiment "wam_tamper_localization_eval.py" "wam_tamper_localization"
+        Invoke-WatermarkModule "tamper_localization\localizer.py" "tamper_localization"
     }
-    "rewatermarking" {
-        Invoke-WamExperiment "wam_rewatermarking_eval.py" "wam_rewatermarking"
+    "provenance_update" {
+        Invoke-WatermarkModule "provenance_update\pipeline.py" "provenance_update"
     }
-    "mbrs_multibranch" {
-        Invoke-WamExperiment "wam_mbrs_multibranch_decode.py" "wam_mbrs_multibranch"
+    "compression_recovery" {
+        Invoke-WatermarkModule "compression_recovery\multi_branch_decode.py" "compression_recovery"
     }
-    "payload_ecc" {
-        Invoke-WamExperiment "wam_payload_ecc_eval.py" "wam_payload_ecc"
+    "repetition_payload" {
+        Invoke-WatermarkModule "payload_coding\repetition_payload.py" "repetition_payload"
     }
-    "payload_ecc_variants" {
-        Invoke-WamExperiment "wam_payload_ecc_variants.py" "wam_payload_ecc_variants"
+    "coding_variants" {
+        Invoke-WatermarkModule "payload_coding\coding_variants.py" "coding_variants"
     }
-    "adaptive_region" {
-        Invoke-WamExperiment "wam_adaptive_region_select.py" "wam_adaptive_region_select"
+    "adaptive_selector" {
+        Invoke-WatermarkModule "region_selection\adaptive_selector.py" "adaptive_selector"
     }
-    "bbox_sync" {
-        Invoke-WamExperiment "wam_dwsf_bbox_sync_decode.py" "wam_dwsf_bbox_sync"
+    "region_sync" {
+        Invoke-WatermarkModule "spatial_redundancy\region_sync.py" "region_sync"
     }
-    "must_source_tracing" {
-        Invoke-WamExperiment "wam_must_composite_tracing.py" "wam_must_composite_tracing"
-        Invoke-WamExperiment "wam_must_composite_tracing_ecc.py" "wam_must_composite_tracing_ecc"
-        $metrics = Join-Path $OutRoot "wam_must_composite_tracing_ecc\wam_must_composite_tracing_ecc_metrics.csv"
-        $outDir = Join-Path $OutRoot "wam_must_codebook_match"
+    "source_tracing" {
+        Invoke-WatermarkModule "source_tracing\composite_trace.py" "source_tracing"
+        Invoke-WatermarkModule "source_tracing\redundant_id_trace.py" "source_tracing_redundant_id"
+        $metrics = Join-Path $OutRoot "source_tracing_redundant_id\source_tracing_redundant_id_metrics.csv"
+        $outDir = Join-Path $OutRoot "source_tracing_codebook_match"
         New-Item -ItemType Directory -Force -Path $outDir | Out-Null
-        & $Python (Join-Path $SrcDir "wam_must_codebook_match.py") --metrics $metrics --out-dir $outDir
+        & $Python (Join-Path $ModuleRoot "source_tracing\codebook_match.py") --metrics $metrics --out-dir $outDir
     }
 }

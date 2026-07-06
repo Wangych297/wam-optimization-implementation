@@ -9,7 +9,7 @@ results_raw/
 *.zip
 *.tar
 *.tar.gz
-original_code/**/checkpoints/*.pth
+checkpoints/*.pth
 
 # Python/runtime noise
 __pycache__/
@@ -24,4 +24,4 @@ tmp/
 *.tmp
 
 # Keep generated visuals locally; commit compact metrics and selected figures only.
-结果输出/*/visuals/*.png
+results_output/*/visuals/*.png
