@@ -1,66 +1,66 @@
-# Robust Watermarking Optimization
+# 鲁棒图像水印优化实现
 
-Robust image watermarking project for information security coursework. The project provides baseline inference, attack benchmarking, spatially redundant embedding, robustness profiling, transform evaluation, tamper localization, provenance update, and source tracing modules.
+这是信息安全课程大作业的鲁棒图像水印工程。项目包含基础推理复现、攻击基准评测、空间冗余嵌入、鲁棒性参数配置、平台变换评估、篡改定位、来源更新和多源溯源等模块。
 
-## Project Layout
-
-```text
-watermark_anything/                 # Model package and extension modules
-assets/                             # Sample images and masks
-configs/                            # Model configs
-checkpoints/                        # Local parameters and checkpoints
-notebooks/                          # Inference utilities
-experiments/                        # Reproducible experiment entrypoints
-tools/run_experiment.ps1            # Unified experiment runner
-results_output/                     # Metrics, summaries, selected visuals
-experiment_notes/                   # Experiment notes and conclusions
-logs/                               # Local runtime logs
-docs/                               # Technical notes and result index
-```
-
-## Extension Modules
+## 工程结构
 
 ```text
-baseline_reproduction/              # Baseline inference reproduction
-attack_benchmark/                   # Attack benchmark
-spatial_redundancy/                 # Spatial redundancy and region sync
-robustness_profiles/                # Strength and robustness profiles
-transform_profiles/                 # Platform transform profiles
-compression_recovery/               # Compression recovery
-payload_coding/                     # Payload coding variants
-region_selection/                   # Adaptive region selection
-tamper_localization/                # Tamper localization
-provenance_update/                  # Provenance update
-source_tracing/                     # Multi-source tracing
-utilities/                          # Utility helpers
+watermark_anything/                 # 模型包与扩展模块
+assets/                             # 示例图片和 mask
+configs/                            # 模型配置
+checkpoints/                        # 本地参数和权重
+notebooks/                          # 推理辅助工具
+experiments/                        # 可复现实验入口
+tools/run_experiment.ps1            # 统一实验运行入口
+results_output/                     # 指标、汇总表和部分可视化结果
+experiment_notes/                   # 实验记录和结论
+logs/                               # 本地运行日志
+docs/                               # 技术说明和结果索引
 ```
 
-## Checkpoint
+## 扩展模块
 
-Place the local checkpoint at:
+```text
+baseline_reproduction/              # 基础推理复现
+attack_benchmark/                   # 攻击基准评测
+spatial_redundancy/                 # 空间冗余和区域同步
+robustness_profiles/                # 强度配置和鲁棒性曲线
+transform_profiles/                 # 平台变换评估
+compression_recovery/               # 压缩恢复
+payload_coding/                     # 载荷编码变体
+region_selection/                   # 自适应区域选择
+tamper_localization/                # 篡改定位
+provenance_update/                  # 来源更新
+source_tracing/                     # 多源溯源
+utilities/                          # 辅助工具
+```
+
+## 权重文件
+
+本地权重放在：
 
 ```text
 checkpoints/wam_mit.pth
 ```
 
-The checkpoint is ignored by Git. Keep `checkpoints/params.json` with the repository.
+权重文件已被 Git 忽略。`checkpoints/params.json` 保留在仓库中。
 
-## Environment
+## 环境
 
-Verified local environment:
+当前验证环境：
 
 ```text
 C:\Users\86155\miniconda3\envs\bamboo\python.exe
 NVIDIA GeForce RTX 4060 Laptop GPU
 ```
 
-Install dependencies from:
+依赖入口：
 
 ```text
 requirements.txt
 ```
 
-## Run
+## 运行
 
 ```powershell
 .\tools\run_experiment.ps1 -Experiment baseline_reproduction
@@ -69,7 +69,7 @@ requirements.txt
 .\tools\run_experiment.ps1 -Experiment source_tracing
 ```
 
-Specify Python explicitly:
+也可以显式指定 Python：
 
 ```powershell
 .\tools\run_experiment.ps1 `
@@ -77,6 +77,6 @@ Specify Python explicitly:
   -Python C:\Users\86155\miniconda3\envs\bamboo\python.exe
 ```
 
-## Main Direction
+## 主线方向
 
-The main implementation combines spatial redundancy, embedding strength profiling, and platform transform evaluation for robust watermark verification under compression, scaling, cropping, local removal, and multi-source composition scenarios.
+主线方案结合空间冗余嵌入、嵌入强度配置和平台变换评估，用于压缩、缩放、裁剪、局部移除和多源合成场景下的鲁棒水印验证。

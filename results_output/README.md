@@ -1,3 +1,3 @@
-# Results Output
+# 结果输出
 
-Generated metrics, summaries, and selected visual artifacts are stored by experiment module in this directory.
+本目录按实验模块保存生成的指标、汇总表和部分可视化结果。

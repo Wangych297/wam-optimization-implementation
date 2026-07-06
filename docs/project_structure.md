@@ -1,21 +1,21 @@
-# Project Structure
+# 工程结构
 
-The repository uses a single project layout for the model package, extension modules, experiment entrypoints, generated results, and documentation.
+仓库采用单工程结构，模型包、扩展模块、实验入口、生成结果和文档都放在同一个项目下。
 
-## Root Project
+## 根目录
 
-- `watermark_anything/`: model package and extension modules.
-- `assets/`: sample images and masks.
-- `configs/`: model configuration files.
-- `checkpoints/`: local parameter files and checkpoints.
-- `notebooks/`: inference utilities.
-- `experiments/`: reproducible experiment entrypoints.
-- `tools/`: project-level utility commands.
-- `results_output/`: generated metrics, summaries, and selected visuals.
-- `experiment_notes/`: experiment notes and conclusions.
-- `logs/`: local runtime logs.
-- `docs/`: technical notes, result index, and report materials.
+- `watermark_anything/`：模型包和扩展模块。
+- `assets/`：示例图片和 mask。
+- `configs/`：模型配置文件。
+- `checkpoints/`：本地参数文件和权重。
+- `notebooks/`：推理辅助工具。
+- `experiments/`：可复现实验入口。
+- `tools/`：项目级工具命令。
+- `results_output/`：生成的指标、汇总表和部分可视化结果。
+- `experiment_notes/`：实验记录和结论。
+- `logs/`：本地运行日志。
+- `docs/`：技术说明、结果索引和报告素材。
 
-## Experiment Entrypoints
+## 实验入口
 
-Each directory under `experiments/` contains a short `README.md` and a `run.ps1` wrapper. Implementations live under `watermark_anything/extensions/`.
+`experiments/` 下每个目录包含一个简短的 `README.md` 和一个 `run.ps1` 包装入口。真正的实现代码位于 `watermark_anything/extensions/`。

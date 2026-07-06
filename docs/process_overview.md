@@ -1,29 +1,29 @@
-# Experiment Overview
+# 实验概览
 
-## Baseline Reproduction
+## 基础复现
 
-Runs the baseline embedding and extraction pipeline with local configs, images, and checkpoint.
+使用本地配置、示例图片和权重运行基础嵌入与提取流程。
 
-## Attack Benchmark
+## 攻击基准
 
-Evaluates compression, resizing, cropping, occlusion, and local removal attacks.
+评估压缩、缩放、裁剪、遮挡和局部移除等攻击。
 
-## Spatial Redundancy
+## 空间冗余
 
-Evaluates multi-region embedding, distributed layouts, coverage search, and region synchronization.
+评估多区域嵌入、分散布局、覆盖率搜索和区域同步。
 
-## Robustness Profiles
+## 鲁棒性配置
 
-Profiles embedding strength and spatial-strength combinations under quality and robustness tradeoffs.
+评估嵌入强度以及空间-强度组合在画质和鲁棒性之间的取舍。
 
-## Transform Profiles
+## 平台变换
 
-Evaluates platform-style image transformations and recommended operating modes.
+评估平台式图像变换，并筛选推荐运行模式。
 
-## Security Applications
+## 安全应用
 
-Includes tamper localization, provenance update, and multi-source tracing.
+包含篡改定位、来源更新和多源溯源。
 
-## Auxiliary Modules
+## 辅助模块
 
-Includes compression recovery, payload coding variants, adaptive region selection, and region synchronization variants.
+包含压缩恢复、载荷编码变体、自适应区域选择和区域同步变体。

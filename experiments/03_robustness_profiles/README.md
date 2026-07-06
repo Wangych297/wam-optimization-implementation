@@ -1,24 +1,24 @@
-# 03 Robustness Profiles
+# 03 鲁棒性配置
 
-## Purpose
+## 目的
 
 把嵌入强度作为可调参数，比较画质和鲁棒性的取舍，并与空间冗余策略组合成可选安全档位。
 
-## Implementation
+## 实现位置
 
 ```text
 watermark_anything/extensions/robustness_profiles/strength_search.py
 watermark_anything/extensions/robustness_profiles/spatial_strength_profile.py
 ```
 
-## Output
+## 输出目录
 
 ```text
 results_output/strength_search
 results_output/spatial_strength_profile
 ```
 
-## Run
+## 运行方式
 
 ```powershell
 .\experiments\03_robustness_profiles\run.ps1
