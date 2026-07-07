@@ -55,7 +55,14 @@ def main() -> int:
 
     from inference_utils import create_random_mask, load_model_from_checkpoint, multiwm_dbscan
     from watermark_anything.data.metrics import msg_predict_inference
+    from torchvision import transforms as T
     from watermark_anything.data.transforms import default_transform, unnormalize_img
+
+    inference_transform = T.Compose([
+        T.Resize(256),
+        T.CenterCrop(256),
+        default_transform,
+    ])
 
     out_dir = Path(args.out_dir).resolve()
     vis_dir = out_dir / "visuals"
@@ -94,7 +101,7 @@ def main() -> int:
 
         for image_path in image_paths:
             img = Image.open(image_path).convert("RGB")
-            img_pt = default_transform(img).unsqueeze(0).to(device)
+            img_pt = inference_transform(img).unsqueeze(0).to(device)
 
             outputs = wam.embed(img_pt, fixed_msg)
             mask = create_random_mask(img_pt, num_masks=1, mask_percentage=args.mask_ratio)
@@ -135,7 +142,7 @@ def main() -> int:
 
         for image_path in image_paths:
             img = Image.open(image_path).convert("RGB")
-            img_pt = default_transform(img).unsqueeze(0).to(device)
+            img_pt = inference_transform(img).unsqueeze(0).to(device)
             masks = create_random_mask(
                 img_pt,
                 num_masks=args.multi_count,
