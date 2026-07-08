@@ -249,3 +249,240 @@ merge_experiment('platform_modes', ['scheme','attack'])
 print('ALL DONE')
 "
 ```
+
+---
+
+## 实验 09：空间覆盖率对裁剪鲁棒性的影响（负结果）
+
+### 参考文献
+
+- **DWSF: Practical Deep Dispersed Watermarking with Synchronization and Fusion** (ACM MM 2023) — 借鉴面积比例 Q 对鲁棒性-PSNR 权衡的分析框架，但原论文未测试 >50% 覆盖率
+- **TrustMark: Universal Watermarking for Arbitrary Resolution Images** (USENIX 2024) — 借鉴强度-质量 Pareto 分析思想，应用于 mask_ratio 维度
+
+### 实验设置
+
+- 模型：WAM wam_mit.pth, scaling_w=2.5
+- 布局：single_center（当前最优基线）
+- 扫描参数：mask_ratio ∈ [0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+- 攻击：none, center_crop_0.5, center_crop_0.75, random_crop_0.5, jpeg_q30（对照组）
+- 数据：COCO 50（seed=42）
+- 实现：`watermark_anything/extensions/spatial_coverage/coverage_crop_sweep.py`（通过 `--mask-ratios` 参数控制）
+
+### 关键结果
+
+| mask_ratio | PSNR | center_crop_0.5 | center_crop_0.75 | jpeg_q30 | none |
+|:----------:|:----:|:--------------:|:---------------:|:--------:|:----:|
+| 0.5 (基线) | 10.22 | 0.500 | 0.661 | 0.998 | 1.000 |
+| 0.6 | 9.43 | 0.500 | 0.733 | 0.999 | 1.000 |
+| 0.7 | 8.76 | 0.500 | 0.733 | 0.998 | 1.000 |
+| 0.8 | 8.21 | 0.500 | 0.733 | 1.000 | 1.000 |
+| 0.9 | 7.69 | 0.500 | 0.733 | 1.000 | 1.000 |
+| 1.0 | 7.21 | 0.500 | 0.733 | 1.000 | 1.000 |
+
+### 结论
+
+**负向。假设不成立：增大 mask 覆盖率不能提升裁剪鲁棒性。**
+
+1. `center_crop_0.5` 在所有 mask_ratio 下恒为 0.500（等同于随机猜测），包括 ratio=1.0 的全图嵌入都无济于事
+2. `center_crop_0.75` 从 0.661 提升到 0.733，仅 +7pp，代价是 PSNR 从 10.22 降至 7.21
+3. PSNR 随 ratio 线性下降但鲁棒性几乎不涨，纯属画质损失无收益
+
+**根因推断**：瓶颈不在嵌入覆盖率，而在**检测侧**。crop 后 BICUBIC 插值回 256×256 导致水印信号的空间尺度发生畸变，ViT 提取器的位置编码与真实水印位置失配。无论嵌入时覆盖了多少面积，提取器看到的都是空间失真的水印模式。
+
+**对后续优化的指导**：应转向**检测侧的优化**：
+- 多尺度检测（在多个分辨率上分别检测再融合）
+- 区域重定位解码（先 detect 出水印存活的局部区域，对该区域局部解码，避免全图 resize 失真）
+- bbox 同步（已有的 `region_sync.py` 可复用）
+
+---
+
+## 实验 10：多尺度检测对裁剪鲁棒性的影响（强正向）
+
+### 参考文献
+
+- **Feature Pyramid Networks for Object Detection** (Lin et al., CVPR 2017) — 借鉴多尺度特征金字塔思想，在多个尺度上分别检测再取最优，是计算机视觉中处理尺度变化的经典方法
+- 实验 09（本报告） — 直接动机：否定嵌入侧优化后，转向检测侧优化
+
+### 实验设置
+
+- 模型：WAM wam_mit.pth, scaling_w=2.5, mask_ratio=0.5（保持原始设置）
+- 扫描尺度：scale ∈ [0.5, 0.75, 1.0, 1.25, 1.5]
+- 聚合策略：每尺度解码后取 bit_accuracy 最高的结果
+- 攻击：none, center_crop_0.5, center_crop_0.75, random_crop_0.5, jpeg_q30
+- 数据：COCO 50（首次）→ COCO 5000（全量）
+- 实现：`watermark_anything/extensions/multi_scale/multi_scale_decode.py`（通过 `--use-multi-scale` 参数控制）
+
+### 关键结果（COCO 5000 全量）
+
+| Attack | Single Scale | Multi Scale | 提升 | 成功率 |
+|--------|:-----------:|:-----------:|:----:|:------:|
+| center_crop_0.5 | 0.502 | **0.99975** | +99.5% | 99.2% |
+| center_crop_0.75 | 0.533 | **1.000** | +87.6% | 100% |
+| random_crop_0.5 | 0.511 | **0.701** | +37.2% | 0% |
+| jpeg_q30 | 0.999 | 0.999 | — | — |
+| none | 1.000 | 1.000 | — | — |
+
+### 最优尺度分布
+
+- center_crop_0.5 → **100%** 选择 scale=0.5
+- center_crop_0.75 → **100%** 选择 scale=0.75
+- random_crop_0.5 → **93.5%** 选择 scale=0.5
+
+### 结论
+
+**强正向。这是本项目第一个明确有效的优化方案。**
+
+1. **根因验证**：实验 09 推断的"检测侧尺度失配"假说得到证实。多尺度检测几乎完全解决了中心裁剪（0.502→0.99975），从随机猜测恢复到近乎完美。
+2. **数学规律**：裁剪比例 = 最优检测尺度。如果攻击者可假设裁剪量（如社交平台标准裁剪策略），可直接选择对应尺度而不需扫描。
+3. **随机裁剪仍有空间**：0.511→0.701 虽然显著提升，但未能达到完美。原因可能是随机裁剪的位置偏移导致部分水印像素彻底丢失，不是尺度问题能解决的。
+4. **零副作用**：非裁剪攻击和无攻击场景的 accuracy 不受影响。纯推理侧优化，无需重新训练。
+5. **实用性**：多尺度检测增加约 5× 的计算开销（5 个尺度各跑一次 detect），可通过已知 crop ratio 直接选最优尺度来消除这一开销。
+
+---
+
+## 实验 11：多尺度检测 + 纠错码组合（正向）
+
+### 参考文献
+
+- **MBRS: Enhancing Robustness of DNN-based Watermarking by Mini-Batch of Real and Simulated JPEG Compression** (ACM MM 2021) — 借鉴 message processor 扩展消息实现冗余的思想
+- **RoSteALS: Robust Steganography using Autoencoder Latent Space** (CVPR 2023 Workshop) — 借鉴 ECC 在噪声信道下改善 secret recovery 的经验
+
+### 实验设置
+
+- 模型：WAM wam_mit.pth, scaling_w=2.5, mask_ratio=0.5
+- ECC 方案：rep3（每 bit 重复 3 次，10-bit 有效载荷 → 30-bit + 2-bit padding → 32-bit WAM 消息）
+- 对照组：多尺度检测 + 32-bit 直接编码（实验 10 配置）
+- 攻击：center_crop_0.5, center_crop_0.75, random_crop_0.5, jpeg_q30, none
+- 数据：COCO 50
+- 实现：`watermark_anything/extensions/multi_scale/multi_scale_ecc.py`（`--use-multi-scale --use-ecc` 参数）
+
+### 关键结果
+
+### 关键结果（COCO 50）
+
+| Attack | Multi-scale (32bit) | + ECC (10bit) | 变化 |
+|--------|:------------------:|:-------------:|:----:|
+| random_crop_0.5 | 0.698 | **0.816** | +16.9% |
+| center_crop_0.5 | 1.000 | 1.000 | — |
+| center_crop_0.75 | 1.000 | 1.000 | — |
+| jpeg_q30 | 0.998 | 1.000 | — |
+| none | 1.000 | 1.000 | — |
+
+### 关键结果（COCO 5000 全量）
+
+| Attack | Multi-scale (32bit) | + ECC (10bit) | 变化 | 成功率 |
+|--------|:------------------:|:-------------:|:----:|:------:|
+| random_crop_0.5 | 0.701 | **0.804** | +14.7% | 7.5% |
+| center_crop_0.5 | 0.99975 | **1.000** | — | 100% |
+| center_crop_0.75 | 1.000 | 1.000 | — | 100% |
+| jpeg_q30 | 0.999 | **1.000** | — | 100% |
+| none | 1.000 | 1.000 | — | 100% |
+
+### 结论
+
+**正向。50 图和 5000 图结论一致：ECC 能进一步提升 random_crop 鲁棒性。**
+
+1. random_crop_0.5 从 0.701 → 0.804（+10.3pp），56/750 张图实现完美恢复
+2. center_crop 和其他攻击也小幅提升至满分
+3. 代价：有效载荷从 32-bit 降至 10-bit（容量换鲁棒性的经典权衡）
+4. 瓶颈：92.5% 的 random_crop 图仍不完美——残余错误超过 rep3 的纠错能力
+5. 下一步可尝试更强的 ECC（rep5、BCH、Reed-Solomon）或交织编码
+
+### ECC 方案扩展（50 图筛选 → 5000 图确认）
+
+在实验 11 COCO 50 结果基础上，扩展测试了 rep5 和 rep4_interleaved 两种更强的 ECC 方案，以及 adaptive scale 优化。
+
+**COCO 50 筛选结果**：
+
+| ECC 方案 | 有效载荷 | random_crop mean | 成功率 |
+|----------|:------:|:----------------:|:------:|
+| rep3 (baseline) | 10-bit | 0.816 | 8.0% |
+| rep3 + adaptive | 10-bit | 0.816 | 8.0% |
+| rep5 | 6-bit | 0.813 | 28.0% |
+| **rep4_interleaved** | **8-bit** | **0.823** | **20.0%** |
+
+**COCO 5000 确认（rep4_interleaved）**：
+
+| Attack | rep3 (10-bit) | rep4_interleaved (8-bit) | 变化 |
+|--------|:-----------:|:------------------------:|:----:|
+| random_crop_0.5 | 0.804 | **0.815** | +1.4% |
+| random_crop 成功率 | 7.5% (56/750) | **19.9%** (149/750) | +165% |
+| center_crop_0.5/0.75 | 1.000 | 1.000 | — |
+| jpeg_q30 | 1.000 | 1.000 | — |
+
+### 补充结论
+
+1. **rep4_interleaved 是当前最优 ECC 配置**：accuracy 最高（0.815）+ 成功率 19.9%，交织编码有效抵抗 random_crop 的突发/连续 bit 错误
+2. **adaptive scale 无损**：对 center_crop 已知裁剪比例时，跳过 5 个尺度的扫描直接使用对应 scale，结果与全扫描完全一致。可将推理开销从 5× 降至 1×
+3. **rep5 不适合**：6-bit 有效载荷太小，且单个 bit 错误代价过大（≈17%），实际可用性低
+4. **random_crop 的进步汇总**：0.511（基线）→ 0.701（多尺度）→ 0.804（rep3）→ 0.815（rep4_int），累计提升 +59.5%
+
+---
+
+## 实验 12：颜色空间切换对饱和度攻击的影响（负向）
+
+### 参考文献
+
+- **WH-SVD-Cb: Robust Blind Watermarking in Cb Channel** (Traitement du Signal 2025) — 借鉴色度通道对 HVS 更不敏感的思想
+- 颜色恒常性与感知均匀颜色空间理论基础
+
+### 实验设置
+
+- 模型：WAM wam_mit.pth, scaling_w=2.5, mask_ratio=0.5
+- 处理方式：攻击图像 → 转换到 YCbCr → 转换回 RGB → WAM 检测
+- 攻击：saturation_1.5, brightness_1.5, contrast_1.5, jpeg_q30, none
+- 数据：COCO 50
+- 实现：`watermark_anything/extensions/color_space/color_space_detect.py`（`--color-space` 参数）
+
+### 关键结果
+
+| Attack | RGB (control) | YCbCr (experimental) | 差异 |
+|--------|:------------:|:--------------------:|:----:|
+| saturation_1.5 | 1.000 | 1.000 | 0 |
+| brightness_1.5 | 1.000 | 1.000 | 0 |
+| contrast_1.5 | 1.000 | 1.000 | 0 |
+| jpeg_q30 | 0.999 | 0.999 | 0 |
+| none | 1.000 | 1.000 | 0 |
+
+### 结论
+
+**负向。YCbCr roundtrip 对色彩变换攻击无任何效果。**
+
+1. COCO 50 样本上 saturation 本身就是满分——样本偏差，不含 COCO 5000 中 cause mean=0.968 的那些难图
+2. 颜色空间 roundtrip 没有改变水印检测的输入分布，WAM 对此类变换本身已足够鲁棒
+3. 如果后续在 COCO 5000 上重测，可能仍无效果——因为 WAM 已在 ImageNet 归一化后的 RGB 空间工作，颜色空间转换不会带来额外信息
+
+---
+
+## 实验 13：多尺度检测 + bbox 区域同步（负向）
+
+### 参考文献
+
+- **DWSF: Practical Deep Dispersed Watermarking with Synchronization and Fusion** (ACM MM 2023) — 借鉴 watermark synchronization module 的 bbox 定位+重采样+分别解码思路
+- 本项目 `region_sync.py` — 已有 bbox 同步解码的工程实现
+
+### 实验设置
+
+- 模型：WAM wam_mit.pth, scaling_w=2.5, mask_ratio=0.5
+- 流程：攻击图 → 多尺度检测 → 获取 watermask → 提取最大连通域 bbox → 裁剪+resize 到 256×256 → 二次解码 → 取最优
+- 攻击：center_crop_0.5, center_crop_0.75, random_crop_0.5, jpeg_q30, none
+- 数据：COCO 50
+- 实现：`watermark_anything/extensions/spatial_redundancy/multi_scale_bbox.py`（`--use-multi-scale --use-bbox-sync` 参数）
+
+### 关键结果
+
+| Attack | Multi-scale | + Bbox Sync | 差异 |
+|--------|:----------:|:-----------:|:----:|
+| random_crop_0.5 | 0.698 | 0.698 | 0 |
+| center_crop_0.5 | 1.000 | 1.000 | 0 |
+| center_crop_0.75 | 1.000 | 1.000 | 0 |
+| jpeg_q30 | 0.998 | 0.998 | 0 |
+| none | 1.000 | 1.000 | 0 |
+
+### 结论
+
+**负向。bbox 区域同步无法在多尺度检测基础上提供增量收益。**
+
+1. 根因分析：crop+resize 后 watermask 本身已严重失真，从失真 mask 提取的 bbox 不可靠
+2. 多尺度检测已从 scale 维度穷举最优解，bbox 同步提供的空间定位信息是冗余的
+3. center_crop 场景下多尺度已完美解决（1.000），bbox 没有增量空间

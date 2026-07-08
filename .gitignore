@@ -23,6 +23,7 @@ logs/
 # Derived datasets (regeneratable from COCO val2017)
 assets/images_coco50/
 assets/images_coco5000/
+assets/images_coco5000_x15/
 
 # Internal planning docs (not for publication)
 brain/

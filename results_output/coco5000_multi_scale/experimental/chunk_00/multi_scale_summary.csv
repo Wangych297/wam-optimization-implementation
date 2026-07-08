@@ -1,0 +1,11 @@
+﻿method,attack,mean_bit_accuracy,message_success_rate,num_samples
+multi_scale,center_crop_0.5,1.000000,1.0000,50
+multi_scale,center_crop_0.75,1.000000,1.0000,50
+multi_scale,jpeg_q30,0.998125,0.9400,50
+multi_scale,none,1.000000,1.0000,50
+multi_scale,random_crop_0.5,0.701875,0.0000,50
+single_scale,center_crop_0.5,0.501875,0.0000,50
+single_scale,center_crop_0.75,0.533125,0.0000,50
+single_scale,jpeg_q30,0.998125,0.9400,50
+single_scale,none,1.000000,1.0000,50
+single_scale,random_crop_0.5,0.508125,0.0000,50

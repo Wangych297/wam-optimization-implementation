@@ -1,0 +1,6 @@
+﻿mask_ratio,attack,mean_bit_accuracy,message_success_rate,mean_psnr,num_samples
+0.5,center_crop_0.5,0.500000,0.0000,10.2162,50
+0.5,center_crop_0.75,0.660625,0.0000,10.2162,50
+0.5,jpeg_q30,0.997500,0.9200,10.2162,50
+0.5,none,1.000000,1.0000,10.2162,50
+0.5,random_crop_0.5,0.508750,0.0000,10.2162,50

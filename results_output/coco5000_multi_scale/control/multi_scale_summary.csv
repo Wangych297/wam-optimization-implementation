@@ -1,0 +1,6 @@
+method,attack,mean_acc,success_rate,count
+single_scale,center_crop_0.5,0.5015,0.0,750
+single_scale,center_crop_0.75,0.5327083333333333,0.0,750
+single_scale,jpeg_q30,0.9987083333333333,0.9586666666666667,750
+single_scale,none,0.99975,0.992,750
+single_scale,random_crop_0.5,0.5110416666666666,0.0,750
