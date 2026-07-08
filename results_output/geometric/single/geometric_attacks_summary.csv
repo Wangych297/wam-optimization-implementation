@@ -1,0 +1,10 @@
+﻿attack,mean_bit_accuracy,message_success_rate,num_samples
+flip_h,0.646250,0.0000,50
+flip_v,0.508750,0.0000,50
+none,0.998750,0.9600,50
+rotate_15,0.539375,0.0000,50
+rotate_180,0.546250,0.0000,50
+rotate_30,0.498750,0.0000,50
+rotate_45,0.482500,0.0000,50
+rotate_45_crop_50,0.478125,0.0000,50
+rotate_90,0.493750,0.0000,50

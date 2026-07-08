@@ -7,7 +7,9 @@ and adaptive scale selection.
 ECC modes:
   - rep3: 10-bit payload, each bit ×3 → 30 + 2 pad = 32 (baseline, Exp 11)
   - rep5: 6-bit payload,  each bit ×5 → 30 + 2 pad = 32 (more redundancy)
-  - rep4_interleaved: 8-bit payload, each bit ×4, interleaved → 32
+  - rep4_interleaved: 8-bit payload, each bit ×4, interleaved → 32 (best so far)
+  - rep3_interleaved: 10-bit payload, each bit ×3, interleaved → 32 (compare to rep3)
+  - rep4_adjacent: 8-bit payload, each bit ×4, NOT interleaved → 32 (isolate interleaving benefit)
 
 Adaptive scale: skip multi-scale scan when crop ratio is known (center_crop).
 
@@ -38,7 +40,7 @@ def parse_args():
     p.add_argument("--use-multi-scale", action="store_true")
     p.add_argument("--use-ecc", action="store_true")
     p.add_argument("--ecc-mode", default="rep3",
-                   choices=["rep3", "rep5", "rep4_interleaved"],
+                   choices=["rep3", "rep5", "rep4_interleaved", "rep3_interleaved", "rep4_adjacent"],
                    help="ECC coding scheme (default: rep3)")
     p.add_argument("--adaptive-scale", action="store_true",
                    help="Skip multi-scale scan for center_crop, use known ratio directly")
@@ -49,9 +51,11 @@ SCALES = [0.5, 0.75, 1.0, 1.25, 1.5]
 
 # ECC mode configs: (payload_bits, repeat_factor, interleaved)
 ECC_CONFIGS = {
-    "rep3":             (10, 3, False),
-    "rep5":             (6,  5, False),
-    "rep4_interleaved": (8,  4, True),
+    "rep3":              (10, 3, False),
+    "rep5":              (6,  5, False),
+    "rep4_interleaved":  (8,  4, True),
+    "rep3_interleaved":  (10, 3, True),
+    "rep4_adjacent":     (8,  4, False),
 }
 
 
@@ -78,8 +82,18 @@ def apply_attack(name, img_w, dft, unnorm, device, rng):
         cw, ch = max(1, int(w*ratio)), max(1, int(h*ratio))
         left=rng.randint(0,max(0,w-cw)); top=rng.randint(0,max(0,h-ch))
         cropped = img_pil.crop((left, top, left+cw, top+ch)).resize((w, h), Image.BICUBIC)
-    elif name == "jpeg_q30":
-        buf=io.BytesIO(); img_pil.save(buf,format="JPEG",quality=30); buf.seek(0)
+    elif name.startswith("resize_"):
+        ratio = float(name.split("_")[-1])
+        nw, nh = max(1, int(w*ratio)), max(1, int(h*ratio))
+        cropped = img_pil.resize((nw, nh), Image.BICUBIC).resize((w, h), Image.BICUBIC)
+    elif name.startswith("jpeg_"):
+        q = int(name.split("_q")[-1])
+        buf=io.BytesIO(); img_pil.save(buf,format="JPEG",quality=q); buf.seek(0)
+        cropped=Image.open(buf).convert("RGB")
+    elif name == "crop_50_jpeg_30":
+        cw,ch=max(1,int(w*0.5)),max(1,int(h*0.5)); l=(w-cw)//2; t=(h-ch)//2
+        cropped=img_pil.crop((l,t,l+cw,t+ch)).resize((w,h),Image.BICUBIC)
+        buf=io.BytesIO(); cropped.save(buf,format="JPEG",quality=30); buf.seek(0)
         cropped=Image.open(buf).convert("RGB")
     else: return img_w
     return dft(cropped).unsqueeze(0).to(device)
@@ -181,7 +195,9 @@ def main():
         payload_raw = np.array([rng.randint(0, 2) for _ in range(32)], dtype=np.float32)
     msg_raw = torch.from_numpy(payload_raw).unsqueeze(0).to(device)
 
-    attacks = ["none", "center_crop_0.5", "center_crop_0.75", "random_crop_0.5", "jpeg_q30"]
+    attacks = ["none", "center_crop_0.5", "center_crop_0.75", "random_crop_0.5",
+               "jpeg_q30", "jpeg_q10", "jpeg_q5",
+               "resize_0.5", "resize_0.25", "crop_50_jpeg_30"]
     rows = []
 
     for img_idx, image_path in enumerate(image_paths):

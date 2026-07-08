@@ -1,0 +1,3 @@
+﻿scheme,mean_msg_a_accuracy,mean_msg_b_accuracy,both_success_rate,mean_slot_a_pixels,mean_slot_b_pixels,mean_psnr_watermarked
+disjoint_append_side_regions,0.964792,0.943958,0.060000,19711.0,15618.6,9.9005
+overlap_replace_same_region,0.540000,0.972917,0.000000,19706.6,19706.6,12.4417

@@ -1,0 +1,10 @@
+﻿scheme,localizer,mean_global_f1,mean_global_iou,mean_covered_f1,mean_covered_iou,mean_tamper_coverage,mean_bit_accuracy
+distributed_q30_5block,clean_missing,0.402009,0.253654,0.973170,0.953737,0.260542,0.984625
+distributed_q30_5block,expected_missing,0.391792,0.245677,0.980301,0.967472,0.251307,0.984625
+distributed_q30_5block,prob_drop,0.410528,0.260014,0.980816,0.964123,0.264475,0.984625
+distributed_q50_5block,clean_missing,0.608150,0.453663,0.891772,0.859431,0.524191,0.993125
+distributed_q50_5block,expected_missing,0.562185,0.407292,0.890371,0.866186,0.467728,0.993125
+distributed_q50_5block,prob_drop,0.666221,0.501549,0.960391,0.929409,0.533485,0.993125
+single_center_50pct,clean_missing,0.674149,0.602699,0.791452,0.779395,0.815400,0.984500
+single_center_50pct,expected_missing,0.666088,0.594566,0.796736,0.789700,0.802173,0.984500
+single_center_50pct,prob_drop,0.675867,0.605354,0.790938,0.778237,0.816873,0.984500

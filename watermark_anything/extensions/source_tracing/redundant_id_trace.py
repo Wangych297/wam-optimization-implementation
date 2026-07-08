@@ -52,10 +52,19 @@ def decode_rep4_interleaved(pred_message):
     return decoded
 
 
+def encode_identity(payload):
+    return payload.float()
+
+
+def decode_identity(pred_message):
+    return pred_message.detach().cpu().int()
+
+
 def code_definitions():
     return [
         ("rep4_adjacent_8bit", encode_rep4_adjacent, decode_rep4_adjacent),
         ("rep4_interleaved_8bit", encode_rep4_interleaved, decode_rep4_interleaved),
+        ("identity_32bit", encode_identity, decode_identity),
     ]
 
 
@@ -184,7 +193,7 @@ def main() -> int:
         for p in source_paths
     ]
 
-    payloads = [torch.randint(0, 2, (1, 8), device=device).float() for _ in source_paths]
+    payloads = [torch.randint(0, 2, (1, 32), device=device).float() for _ in source_paths]
     print(f"background={background_path.name}", flush=True)
     print(f"sources={[p.name for p in source_paths]}", flush=True)
     for idx, payload in enumerate(payloads):
@@ -214,8 +223,8 @@ def main() -> int:
 
     try:
         with torch.inference_mode():
-            for code_mode, encode_fn, decode_fn in code_definitions():
-                messages = [encode_fn(payload) for payload in payloads]
+            for code_mode, encode_fn, decode_fn in [("identity_32bit", encode_identity, decode_identity)]:
+                messages = [payload for payload in payloads]  # 32-bit, no encoding needed
                 for idx, msg in enumerate(messages):
                     print(f"{code_mode}_source_{idx}_message={msg_to_str(msg)}", flush=True)
                 for mode in base.mode_definitions():
@@ -270,7 +279,7 @@ def main() -> int:
                                         "source_idx": source_idx,
                                         "source_image": source_name,
                                         "target_payload": bits_to_str(target_payload.detach().cpu().int().view(-1).tolist()),
-                                        "decoded_payload": bits_to_str(decoded_payload.tolist()),
+                                        "decoded_payload": bits_to_str(decoded_payload.view(-1).tolist()),
                                         "target_message": msg_to_str(target_msg),
                                         "predicted_message": msg_to_str(pred),
                                         "bit_accuracy": f"{bit_acc:.6f}",

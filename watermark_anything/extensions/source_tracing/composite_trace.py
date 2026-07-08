@@ -194,6 +194,7 @@ def build_mode_image(mode, img_pt, embedded_full, area):
 
 
 def decode_image(wam, img, target_msg, area, default_transform, device, msg_predict_inference):
+    img = img.resize((256, 256), Image.BICUBIC)
     img_pt = area.pil_to_tensor(img, default_transform, device)
     pred, acc, mask_pixels, fallback = area.decode(wam, img_pt, target_msg, msg_predict_inference)
     return pred, acc, mask_pixels, fallback

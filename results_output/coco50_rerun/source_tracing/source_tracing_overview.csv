@@ -1,0 +1,16 @@
+﻿scheme,decode_method,mean_source_accuracy,min_source_accuracy,source_success_rate,mean_composite_psnr
+distributed_q50_s2.5,global_full_canvas,0.109375,0.000000,0.000000,17.3450
+distributed_q50_s2.5,localized_resize,0.587891,0.000000,0.156250,17.3450
+distributed_q50_s2.5,oracle_box_raw,0.587891,0.000000,0.156250,17.3450
+distributed_q50_s3.0,global_full_canvas,0.072266,0.000000,0.000000,16.1789
+distributed_q50_s3.0,localized_resize,0.580078,0.000000,0.156250,16.1789
+distributed_q50_s3.0,oracle_box_raw,0.580078,0.000000,0.156250,16.1789
+full_material_s2.5,global_full_canvas,0.273438,0.000000,0.000000,13.9230
+full_material_s2.5,localized_resize,0.799805,0.343750,0.156250,13.9230
+full_material_s2.5,oracle_box_raw,0.799805,0.343750,0.156250,13.9230
+full_material_s3.0,global_full_canvas,0.242188,0.000000,0.000000,12.7848
+full_material_s3.0,localized_resize,0.795898,0.375000,0.125000,12.7848
+full_material_s3.0,oracle_box_raw,0.795898,0.375000,0.125000,12.7848
+single_center50_s2.5,global_full_canvas,0.384766,0.312500,0.000000,15.4437
+single_center50_s2.5,localized_resize,0.689453,0.000000,0.156250,15.4437
+single_center50_s2.5,oracle_box_raw,0.689453,0.000000,0.156250,15.4437

@@ -1,0 +1,11 @@
+﻿attack,mean_bit_accuracy,message_success_rate,num_samples,ecc_mode,payload_bits
+center_crop_0.5,1.000000,1.0000,50,rep3,10
+center_crop_0.75,1.000000,1.0000,50,rep3,10
+crop_50_jpeg_30,1.000000,1.0000,50,rep3,10
+jpeg_q10,0.998000,0.9800,50,rep3,10
+jpeg_q30,1.000000,1.0000,50,rep3,10
+jpeg_q5,1.000000,1.0000,50,rep3,10
+none,1.000000,1.0000,50,rep3,10
+random_crop_0.5,0.802000,0.0400,50,rep3,10
+resize_0.25,0.972000,0.7200,50,rep3,10
+resize_0.5,1.000000,1.0000,50,rep3,10
