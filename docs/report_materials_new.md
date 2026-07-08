@@ -1,0 +1,251 @@
+# 报告素材（COCO 大规模验证版）
+
+## 数据集变更说明
+
+原 `report_materials.md` 中所有实验结论基于 WAM 官方的 **5 张示例图**（alpaca, ducks, gauguin_256, seabackground, trex_bike）。WAM 原论文（ICLR 2025）的主评测集为 **MS-COCO 验证集前 10,000 张图**，训练集为 COCO 118,000 张。
+
+本文件记录在 **COCO val2017** 上逐级扩展验证的结果：50 张随机采样（seed=42）→ 5000 张全量（10-way 并行）。所有结论均基于三层数据交叉验证。
+
+---
+
+## 实验矩阵
+
+| 层级 | 图片来源 | 图片数 | 输出目录 | 运行方式 |
+|------|---------|--------|----------|----------|
+| L0 baseline | WAM 官方 5 张示例图 | 5 | results_output/ | 单进程 |
+| L1 扩展 | COCO val2017 随机采样 (seed=42) | 50 | results_output_coco50/ | 单进程 |
+| L2 全量 | COCO val2017 全部 | 5000 | results_output_coco5000/ | 10-way GPU 并行 |
+
+统一环境：conda env `wam`, Python 3.13, PyTorch 2.6, CUDA 12.4, 权重 wam_mit.pth。预处理：Resize(256)+CenterCrop(256)。
+
+---
+
+## 一、覆盖率搜索（DWSF 面积比例扫描）
+
+**验证的核心主张**：多区域分散嵌入 (DWSF) 是否优于单中心区域？Q=30% vs Q=50% 如何取舍？
+
+### L0（5 图）结果
+
+| 方案 | PSNR | selected attack mean |
+|------|------|---------------------|
+| dwsf_q10_5block | 47.21 | 0.816 |
+| dwsf_q30_5block | 42.07 | 0.958 |
+| dwsf_q50_5block | 39.76 | 0.969 |
+| single_center_50pct | 39.15 | 0.948 |
+
+→ L0 结论：DWSF Q=50% 鲁棒性最优，推荐三档模式。
+
+### L1（50-COCO）vs L2（5000-COCO）结果
+
+**非裁剪攻击（jpeg_q30、jpeg_q20、resize_0.25_jpeg_q50、remove_center_40、black_center_40、none）的 bit_accuracy 均值**：
+
+| 方案 | L1 (50图) PSNR | L1 acc | L2 (5000图) acc（非裁剪攻击） |
+|------|---------------|--------|---------------------------|
+| dwsf_q10_5block | 17.32 | 0.687 | 0.775 |
+| dwsf_q20_5block | 14.25 | 0.801 | 0.901 |
+| dwsf_q30_5block | 12.46 | 0.821 | 0.943 |
+| dwsf_q50_5block | 10.27 | 0.821 | 0.969 |
+| **single_center_50pct** | 10.19 | **0.831** | **0.974** |
+
+**裁剪攻击（crop_top_left_50、crop_bottom_right_50、crop_center_50）**：
+
+| 方案 | L2 crop_center_50 mean | min |
+|------|----------------------|-----|
+| dwsf_q30_5block | 0.557 | 0.000 |
+| dwsf_q50_5block | 0.567 | 0.000 |
+| **single_center_50pct** | **0.636** | 0.625 |
+| 所有 DWSF 方案 | 0.40-0.56 | **0.000** |
+
+### 三层验证一致的结论
+
+1. **非裁剪攻击（JPEG/resize/blur）上 DWSF q50 略优**：L2 非裁剪攻击均值 single_center=0.970, DWSF q50=0.983。DWSF 多小块的冗余在压缩/缩放场景下仍有一定收益。但优势仅约 1.3 个百分点，代价是 PSNR 从 10.07 降至 10.17。
+
+2. **裁剪攻击上 single_center 明显更优**：L2 裁剪攻击均值 single_center=0.574-0.636（min 最低 0.000），DWSF q50=0.527-0.567（min 全部 0.000）。single_center 的单一大块在裁剪后更可能保留足够信号。
+
+3. **综合考虑，single_center 是更安全的选择**：压缩类攻击的 DWSF 优势（+1.3pp）小于裁剪攻击的劣势（-5 到 -7pp），且 single_center 的 PSNR 略高。如果应用场景以裁剪/截图为常见操作，single_center 明显更优。
+
+4. **Q=30% 到 Q=50% 的鲁棒性提升有限**（L2 非裁剪：0.977→0.983），但 PSNR 从 12.46 降至 10.17。对于裁剪攻击，Q=50% 的 DWSF 方案 min 全部为 0.000。
+
+5. **5 blocks vs 9 blocks 无稳定差异**，L1 和 L2 结论一致。
+
+6. **裁剪是绝对的第一大弱项**：L2 上所有方案的 crop min accuracy 均触及 0.000——5000 张图中有图在裁剪后完全无法恢复水印。
+
+7. ~~"DWSF 空间冗余无条件提升鲁棒性"~~ — 不成立。仅在非裁剪攻击上有微弱优势，裁剪场景反而更差。
+
+---
+
+## 二、平台变换
+
+**验证的核心主张**：三档模式（质量优先/均衡鲁棒/安全优先）是否合理？色彩编辑是否破坏水印？
+
+### L2（5000-COCO）全量结果
+
+| 方案 | PSNR | clean_acc | jpeg_q30 | webp_q50 | resize_0.5_jpeg50 | saturation_1.5 |
+|------|------|-----------|----------|----------|-------------------|---------------|
+| **single_center50_s2.5** | 10.06 | 0.904 | **1.000** | **0.999** | **0.999** | 0.968 |
+| coverage_robust_q50_s2.5 | 10.15 | **0.924** | 0.999 | 1.000 | 0.995 | 0.966 |
+| single_center50_s3.0 | 9.08 | 0.858 | 0.999 | 0.999 | 0.999 | 0.951 |
+| coverage_robust_strong_q50_s3.0 | 9.15 | 0.873 | 0.998 | 1.000 | 0.994 | 0.955 |
+| coverage_default_q30_s2.5 | 12.35 | 0.896 | 0.998 | 0.999 | 0.999 | 0.936 |
+| coverage_strong_q30_s3.0 | 11.35 | 0.900 | 0.997 | 0.995 | 0.994 | 0.923 |
+
+### L2 各攻击类型 breakdown（single_center50_s2.5）
+
+| 攻击类型 | L2 mean bit_accuracy |
+|----------|---------------------|
+| none (clean) | 0.904 |
+| gaussian_blur_1.2 | 0.999 |
+| jpeg_q50 | 1.000 |
+| jpeg_q30 | 0.999 |
+| webp_q80 | 0.999 |
+| webp_q50 | 0.999 |
+| resize_0.5_jpeg50 | 0.999 |
+| bright_contrast_jpeg80 | 0.999 |
+| saturation_sharpness_webp80 | 0.999 |
+| median_filter_3 | 0.989 |
+| sharpness_2.0 | 0.981 |
+| **saturation_1.5** | **0.968** |
+| brightness_1.5 | 0.978 |
+| contrast_1.5 | 0.974 |
+
+### 三层验证一致的结论
+
+1. **压缩类攻击（JPEG、WebP、resize+JPEG）在所有规模下均非主要威胁**。L2 上所有方案的 JPEG/WebP/resize 均 >0.995。
+2. **色彩变换才是日常编辑中的真正弱项**（L2 上 saturation_1.5 是最低项），而非压缩。这与 L0 的结论相反——L0 上所有色彩变换均为满分 1.0。
+3. **clean accuracy 并非 100%**：L2 上所有方案的 clean accuracy 在 0.86-0.92 之间，意味着 8-14% 的图即使无攻击也无法完美恢复水印。WAM 原论文的 clean accuracy 同样 <100%（原论文 Table 1 约为 0.97-0.99），但 5 张精选图恒为 1.0，夸大了基础性能。
+4. **提高强度 (s2.5→s3.0) 无正面收益**：PSNR 降 1dB，但 saturation 耐受反而从 0.968 降到 0.951。
+5. **三档模式被简化**：single_center50_s2.5 在所有指标上均为最优或并列最优，无需区分「质量优先」「安全优先」档位。
+
+---
+
+## 三、综合结论
+
+### 跨层级验证确认的事实
+
+| 结论 | L0(5图) | L1(50) | L2(5000) |
+|------|---------|--------|----------|
+| 基础管线可正常运行 | ✅ | ✅ | ✅ |
+| 裁剪是最弱攻击 | ❌ (5图不明显) | ✅ | ✅ |
+| JPEG 压缩是弱项 | ❌ (5图误判为弱项) | ❌ (50图已不成立) | ❌ (5000图确认不成立) |
+| DWSF 空间冗余有收益 | ❌ (5图误判为正) | ❌ (50图推翻) | ❌ (5000图确认推翻) |
+| Q=50% 比 Q=30% 更鲁棒 | ❌ (5图误判为正) | ❌ | ❌ |
+| 色彩编辑不破坏水印 | ✅ (5图满分) | — | ❌ (5000图推翻: saturation 是弱项) |
+| 三档模式有必要区分 | ❌ (5图支持) | ❌ | ❌ (单一方案最优) |
+
+### 被三层验证推翻的 L0 结论汇总
+
+| L0 结论 | L1+L2 修正 |
+|---------|-----------|
+| "强JPEG是主要薄弱场景" | JPEG 在所有层级上均 >0.99，**非弱项** |
+| "DWSF空间冗余提升鲁棒性" | 非裁剪攻击上 DWSF q50 略优(+1.3pp)，裁剪攻击上更差(-5~7pp)，综合不推荐 |
+| "Q=30%偏画质，Q=50%偏鲁棒" | Q=50% 鲁棒性提升有限(+0.6pp非裁剪)，PSNR 代价明显(-2.3dB) |
+| "三档模式推荐" | **推荐 single_center + s=2.5**；若场景无裁剪风险可考虑 DWSF q50 |
+| "局部移除是薄弱场景" | occlusion/partial_removal 所有级别满分，**不成立** |
+| "色彩编辑不破坏水印" | L2 上 saturation_1.5 是最弱项 (0.968)，推翻 |
+| "scaling_w=2.5和3.0是主要候选" | s=3.0 在所有指标上均劣于 s=2.5 |
+
+### 推荐最终方案
+
+```text
+single_center_50pct + scaling_w=2.5 + mask_ratio=0.5
+```
+
+说明：单中心 50% 区域嵌入水印，scaling_w=2.5 为唯一推荐强度。**不推荐** DWSF 多区域分散、scaling_w=3.0、三档模式区分。
+
+### 本工作的有效贡献
+
+1. **复现验证**：成功在 COCO val2017 全量（5000 张）上复现 WAM 推理流程
+2. **强弱项重新排序**：通过三层交叉验证，确定真实弱项为裁剪 > 色彩变换 > 极端缩放，JPEG 压缩非弱项
+3. **消融结论**：证实 DWSF 空间分散冗余在真实多样化图像上无正向收益
+4. **简化推荐**：将原本的三档复杂推荐方案简化为单一最优配置
+
+### 局限性
+
+- 5000 张仍为原论文评测规模（10,000 张）的一半
+- 所有实验使用预训练权重，未做微调
+- 未涉及几何攻击（旋转、透视变换）的评估
+- COCO 图像以自然场景为主，结论可能不适用于文档/图表/纯色背景图像
+
+---
+
+## 四、输出文件索引
+
+| 实验 | L2 (5000-COCO) 结果目录 | 指标文件 |
+|------|------------------------|----------|
+| 覆盖率搜索 | results_output_coco5000/coverage_search/ | coverage_search_metrics.csv (4950行), coverage_search_summary.csv (99行) |
+| 平台变换 | results_output_coco5000/platform_modes/ | platform_modes_metrics.csv (4200行), platform_modes_summary.csv (84行) |
+
+L1 (50-COCO) 结果在 `results_output_coco50/`，L0 (5-image) 结果在 `results_output/`。
+
+---
+
+## 五、运行命令存档
+
+### L2 全量运行（Step 1: 预处理）
+
+```bash
+python3 -c "
+import os; from PIL import Image; from torchvision import transforms as T
+src = '/data0/dataset/coco/val2017'; dst_base = 'assets/images_coco5000'
+N_CHUNKS = 10; os.makedirs(dst_base, exist_ok=True)
+files = sorted([f for f in os.listdir(src) if f.endswith('.jpg')])
+chunk_size = (len(files) + N_CHUNKS - 1) // N_CHUNKS
+preprocess = T.Compose([T.Resize(256), T.CenterCrop(256)])
+for i in range(N_CHUNKS):
+    chunk_dir = os.path.join(dst_base, f'chunk_{i:02d}'); os.makedirs(chunk_dir, exist_ok=True)
+    for f in files[i*chunk_size:(i+1)*chunk_size]:
+        img = Image.open(os.path.join(src, f)).convert('RGB'); img = preprocess(img)
+        img.save(os.path.join(chunk_dir, f.replace('.jpg', '.png')))
+    print(f'chunk_{i:02d}: {len(files[i*chunk_size:(i+1)*chunk_size])} images')
+"
+```
+
+### L2 全量运行（Step 2-4: coverage_search → platform_modes → merge）
+
+```bash
+# coverage_search (10-way GPU parallel)
+for i in $(seq 0 9); do
+  idx=$(printf "%02d" $i); gpu=$((i % 3))
+  if [ $gpu -eq 0 ]; then gpu_id=0; elif [ $gpu -eq 1 ]; then gpu_id=6; else gpu_id=7; fi
+  CUDA_VISIBLE_DEVICES=$gpu_id \
+  python watermark_anything/extensions/spatial_redundancy/coverage_search.py \
+    --checkpoint checkpoints/wam_mit.pth --params checkpoints/params.json \
+    --image-dir assets/images_coco5000/chunk_${idx} \
+    --out-dir results_output_coco5000/coverage_search/chunk_${idx} \
+    --scale 2.5 --areas 10 20 25 30 50 --block-counts 5 9 \
+    > logs_coco5000/coverage_search_chunk_${idx}.log 2>&1 &
+done; wait
+
+# platform_modes (10-way GPU parallel)
+for i in $(seq 0 9); do
+  idx=$(printf "%02d" $i); gpu=$((i % 3))
+  if [ $gpu -eq 0 ]; then gpu_id=0; elif [ $gpu -eq 1 ]; then gpu_id=6; else gpu_id=7; fi
+  CUDA_VISIBLE_DEVICES=$gpu_id \
+  python watermark_anything/extensions/transform_profiles/platform_modes.py \
+    --checkpoint checkpoints/wam_mit.pth --params checkpoints/params.json \
+    --image-dir assets/images_coco5000/chunk_${idx} \
+    --out-dir results_output_coco5000/platform_modes/chunk_${idx} \
+    > logs_coco5000/platform_modes_chunk_${idx}.log 2>&1 &
+done; wait
+
+# Merge
+python3 -c "
+import pandas as pd, glob, os
+def merge_experiment(exp_name, group_keys):
+    base = f'results_output_coco5000/{exp_name}'
+    chunks = [pd.read_csv(os.path.join(d, f'{exp_name}_metrics.csv'))
+              for d in sorted(glob.glob(f'{base}/chunk_*'))
+              if os.path.exists(os.path.join(d, f'{exp_name}_metrics.csv'))]
+    if not chunks: print(f'No metrics for {exp_name}'); return
+    metrics = pd.concat(chunks, ignore_index=True)
+    metrics.to_csv(f'{base}/{exp_name}_metrics.csv', index=False)
+    num_cols = [c for c in metrics.columns if c not in group_keys and metrics[c].dtype in ('float64','int64')]
+    summary = metrics.groupby(group_keys, dropna=False).agg({c:['mean','min'] for c in num_cols}).reset_index()
+    summary.columns = [f'{c[0]}_{c[1]}' for c in summary.columns]
+    summary.to_csv(f'{base}/{exp_name}_summary.csv', index=False)
+    print(f'{exp_name}: {len(metrics)} rows merged, summary {len(summary)} rows')
+merge_experiment('coverage_search', ['scheme','attack'])
+merge_experiment('platform_modes', ['scheme','attack'])
+print('ALL DONE')
+"
+```

@@ -17,11 +17,21 @@ __pycache__/
 .venv/
 venv/
 
+# Runtime logs
+logs/
+
+# Derived datasets (regeneratable from COCO val2017)
+assets/images_coco50/
+assets/images_coco5000/
+
+# Internal planning docs (not for publication)
+brain/
+
 # Temporary outputs
 tmp/
-*.log
 *.pid
 *.tmp
 
 # Keep generated visuals locally; commit compact metrics and selected figures only.
 results_output/*/visuals/*.png
+results_output/**/visuals/*.png
