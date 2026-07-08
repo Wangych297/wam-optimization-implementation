@@ -1,0 +1,13 @@
+﻿attack,mean_bit_accuracy,message_success_rate,num_samples,method
+flip_h,0.646250,0.0000,50,fourier
+flip_v,0.508750,0.0000,50,fourier
+none,1.000000,1.0000,50,fourier
+rotate_137,0.500000,0.0000,50,fourier
+rotate_17,0.518125,0.0000,50,fourier
+rotate_180,1.000000,1.0000,50,fourier
+rotate_23,0.501250,0.0000,50,fourier
+rotate_38,0.495000,0.0000,50,fourier
+rotate_45_crop_50,0.454375,0.0000,50,fourier
+rotate_52,0.468125,0.0000,50,fourier
+rotate_73,0.435000,0.0000,50,fourier
+rotate_90,0.410000,0.0000,50,fourier

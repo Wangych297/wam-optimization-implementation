@@ -1,0 +1,10 @@
+﻿attack,mean_bit_accuracy,message_success_rate,num_samples,method
+flip_h,1.000000,1.0000,50,angle_scan
+flip_v,1.000000,1.0000,50,angle_scan
+none,1.000000,1.0000,50,angle_scan
+rotate_15,1.000000,1.0000,50,angle_scan
+rotate_180,1.000000,1.0000,50,angle_scan
+rotate_30,1.000000,1.0000,50,angle_scan
+rotate_45,1.000000,1.0000,50,angle_scan
+rotate_45_crop_50,0.869375,0.0000,50,angle_scan
+rotate_90,1.000000,1.0000,50,angle_scan

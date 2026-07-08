@@ -1,0 +1,10 @@
+﻿attack,mean_bit_accuracy,message_success_rate,num_samples,method
+flip_h,1.000000,1.0000,50,derotate
+flip_v,1.000000,1.0000,50,derotate
+none,1.000000,1.0000,50,derotate
+rotate_15,1.000000,1.0000,50,derotate
+rotate_180,1.000000,1.0000,50,derotate
+rotate_30,1.000000,1.0000,50,derotate
+rotate_45,1.000000,1.0000,50,derotate
+rotate_45_crop_50,1.000000,1.0000,50,derotate
+rotate_90,1.000000,1.0000,50,derotate

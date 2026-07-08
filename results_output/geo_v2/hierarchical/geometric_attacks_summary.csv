@@ -1,0 +1,13 @@
+﻿attack,mean_bit_accuracy,message_success_rate,num_samples,method
+flip_h,0.646250,0.0000,50,hierarchical
+flip_v,0.508750,0.0000,50,hierarchical
+none,1.000000,1.0000,50,hierarchical
+rotate_137,0.755000,0.0000,50,hierarchical
+rotate_17,0.836875,0.0000,50,hierarchical
+rotate_180,1.000000,1.0000,50,hierarchical
+rotate_23,0.885000,0.0000,50,hierarchical
+rotate_38,0.811250,0.0400,50,hierarchical
+rotate_45_crop_50,0.993125,0.9800,50,hierarchical
+rotate_52,0.943750,0.0600,50,hierarchical
+rotate_73,0.838750,0.0000,50,hierarchical
+rotate_90,0.641250,0.2400,50,hierarchical
