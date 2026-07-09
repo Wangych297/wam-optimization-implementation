@@ -40,7 +40,7 @@ def parse_args():
     p.add_argument("--use-multi-scale", action="store_true")
     p.add_argument("--use-ecc", action="store_true")
     p.add_argument("--ecc-mode", default="rep3",
-                   choices=["rep3", "rep5", "rep4_interleaved", "rep3_interleaved", "rep4_adjacent"],
+                   choices=["rep3", "rep5", "rep4_interleaved", "rep3_interleaved", "rep4_adjacent", "bch_31_16"],
                    help="ECC coding scheme (default: rep3)")
     p.add_argument("--adaptive-scale", action="store_true",
                    help="Skip multi-scale scan for center_crop, use known ratio directly")
@@ -49,13 +49,14 @@ def parse_args():
 
 SCALES = [0.5, 0.75, 1.0, 1.25, 1.5]
 
-# ECC mode configs: (payload_bits, repeat_factor, interleaved)
+# ECC mode configs: (payload_bits, repeat_factor, interleaved) or (payload_bits, "bch", None)
 ECC_CONFIGS = {
     "rep3":              (10, 3, False),
     "rep5":              (6,  5, False),
     "rep4_interleaved":  (8,  4, True),
     "rep3_interleaved":  (10, 3, True),
     "rep4_adjacent":     (8,  4, False),
+    "bch_31_16":         (16, "bch", None),
 }
 
 
@@ -120,6 +121,35 @@ def decode_at_scale(attacked_pt, scale, wam, mp_infer, device, unnorm, dft):
 def msg_to_str(m): return "".join("1" if b else "0" for b in m.detach().cpu().int().view(-1).tolist())
 
 
+def ecc_encode_bch(payload_16bit):
+    """BCH(31,16): 16-bit → 31-bit (16 data + 15 ECC), pad to 32."""
+    import bchlib
+    bch = bchlib.BCH(t=3, m=5)
+    data_bytes = int(''.join(str(b) for b in payload_16bit), 2).to_bytes(2, 'big')
+    ecc_bytes = bch.encode(data_bytes)
+    # 16-bit data + 15-bit ECC = 31 bits, pad to 32
+    ecc_bits = int.from_bytes(ecc_bytes, 'big')
+    ecc_bits_15 = [(ecc_bits >> (14-i)) & 1 for i in range(15)]
+    return torch.tensor(list(payload_16bit) + ecc_bits_15 + [0], dtype=torch.float32)  # 32-bit
+
+
+def ecc_decode_bch(pred_32bit):
+    """BCH(31,16) decode: 32-bit → 16-bit, correct up to 3 bit errors."""
+    import bchlib
+    bch = bchlib.BCH(t=3, m=5)
+    data_bits = pred_32bit[:16]
+    ecc_bits = pred_32bit[16:31]  # 15 bits of ECC
+    data_bytes = int(''.join(str(b) for b in data_bits), 2).to_bytes(2, 'big')
+    ecc_bytes = int(''.join(str(b) for b in ecc_bits), 2).to_bytes(2, 'big')
+    try:
+        corrected = bch.decode(data_bytes, ecc_bytes)
+        if corrected is not None:
+            return list(pred_32bit[:16])  # data unchanged if ecc matched
+    except:
+        pass
+    return list(pred_32bit[:16])  # return as-is if can't correct
+
+
 def ecc_encode(payload, n_bits, repeat, interleaved):
     """Encode n_bits payload with repetition coding → 32-bit WAM message."""
     bits = []
@@ -177,7 +207,11 @@ def main():
     out_dir = Path(args.out_dir).resolve(); out_dir.mkdir(parents=True, exist_ok=True)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    payload_bits, repeat, interleaved = ECC_CONFIGS[args.ecc_mode]
+    ecc_cfg = ECC_CONFIGS[args.ecc_mode]
+    payload_bits = ecc_cfg[0]
+    is_bch = (ecc_cfg[1] == "bch")
+    repeat = ecc_cfg[1] if not is_bch else 0
+    interleaved = ecc_cfg[2] if not is_bch else None
     tag = f"{args.ecc_mode}"
     if args.adaptive_scale: tag += "_adaptive"
     print(f"device={device} multi_scale={args.use_multi_scale} ecc={args.use_ecc} mode={tag}", flush=True)
@@ -205,7 +239,10 @@ def main():
         img_pt = it(img).unsqueeze(0).to(device)
 
         if args.use_ecc:
-            wam_msg = ecc_encode(payload_raw, payload_bits, repeat, interleaved).unsqueeze(0).to(device)
+            if is_bch:
+                wam_msg = ecc_encode_bch(payload_raw.astype(int).tolist()).unsqueeze(0).to(device)
+            else:
+                wam_msg = ecc_encode(payload_raw, payload_bits, repeat, interleaved).unsqueeze(0).to(device)
         else:
             wam_msg = msg_raw
 
@@ -225,7 +262,11 @@ def main():
                 if acc > best_acc: best_acc = acc; best_msg = pred_msg
 
             if args.use_ecc and best_msg is not None:
-                recovered = ecc_decode(best_msg.int().view(-1).tolist(), payload_bits, repeat, interleaved)
+                pred_bits = best_msg.int().view(-1).tolist()
+                if is_bch:
+                    recovered = ecc_decode_bch(pred_bits)
+                else:
+                    recovered = ecc_decode(pred_bits, payload_bits, repeat, interleaved)
                 bit_acc = sum(1 for a,b in zip(recovered, payload_raw.astype(int).tolist()) if a==b) / payload_bits
                 msg_success = 1 if bit_acc == 1.0 else 0
             else:

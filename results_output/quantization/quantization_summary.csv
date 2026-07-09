@@ -1,0 +1,3 @@
+﻿model,mean_bit_accuracy,message_success_rate,avg_infer_ms,model_size_mb,num_samples
+fp32,0.998750,0.9600,10.8,360,50
+fp16,0.998750,0.9600,11.0,180,50
