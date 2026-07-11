@@ -245,14 +245,14 @@ def main():
                     batch = torch.stack(cands).to(device)
 
                 preds_batch = wam.detect(batch)["preds"]
-                best_acc = 0.0
+                best_conf = 0.0; best_msg = None
                 for i in range(len(cands)):
                     mp_t = torch.sigmoid(preds_batch[i:i+1, 0:1, :, :])
                     bp_t = preds_batch[i:i+1, 1:, :, :]
-                    acc = (mp_infer(bp_t, mp_t, method="semihard").float() == msg).float().mean().item()
-                    if acc > best_acc: best_acc = acc
-
-                bit_acc = best_acc
+                    pred_msg = mp_infer(bp_t, mp_t, method="semihard").float()
+                    conf = mp_t.mean().item()
+                    if conf > best_conf: best_conf = conf; best_msg = pred_msg
+                bit_acc = (best_msg == msg).float().mean().item() if best_msg is not None else 0.0
 
             elif args.use_hierarchical and attack_name.startswith("rotate_"):
                 # GPU hierarchical: 60° coarse → 10° medium → 3° fine
@@ -264,48 +264,43 @@ def main():
                 coarse_cands = [rotate_tensor_gpu(attacked_geo, -a) for a in coarse_angles]
                 batch = torch.cat(coarse_cands, dim=0).to(device)
                 preds_b = wam.detect(batch)["preds"]
-                best_coarse_acc = 0.0; best_coarse = 0
+                best_coarse_conf = 0.0; best_coarse = 0
                 for i, a in enumerate(coarse_angles):
                     mp_t = torch.sigmoid(preds_b[i:i+1, 0:1, :, :])
-                    bp_t = preds_b[i:i+1, 1:, :, :]
-                    acc = (mp_infer(bp_t, mp_t, method="semihard").float() == msg).float().mean().item()
-                    if acc > best_coarse_acc: best_coarse_acc = acc; best_coarse = a
+                    conf = mp_t.mean().item()
+                    if conf > best_coarse_conf: best_coarse_conf = conf; best_coarse = a
 
-                # Stage 2: medium at 10° step around best (7 candidates: ±30°)
                 med_angles = [(best_coarse + d) % 360 for d in range(-30, 31, 10)]
                 med_cands = [rotate_tensor_gpu(attacked_geo, -a) for a in med_angles]
                 batch_med = torch.cat(med_cands, dim=0).to(device)
                 preds_m = wam.detect(batch_med)["preds"]
-                best_med_acc = 0.0; best_med = 0
+                best_med_conf = 0.0; best_med = 0
                 for i, a in enumerate(med_angles):
                     mp_t = torch.sigmoid(preds_m[i:i+1, 0:1, :, :])
-                    bp_t = preds_m[i:i+1, 1:, :, :]
-                    acc = (mp_infer(bp_t, mp_t, method="semihard").float() == msg).float().mean().item()
-                    if acc > best_med_acc: best_med_acc = acc; best_med = a
+                    conf = mp_t.mean().item()
+                    if conf > best_med_conf: best_med_conf = conf; best_med = a
 
-                # Stage 3: fine at 3° step around best (5 candidates: ±6°)
                 fine_angles = [(best_med + d) % 360 for d in range(-6, 7, 3)]
                 fine_cands = [rotate_tensor_gpu(attacked_geo, -a) for a in fine_angles]
                 batch_fine = torch.cat(fine_cands, dim=0).to(device)
                 preds_f = wam.detect(batch_fine)["preds"]
-                best_acc = 0.0
+                best_conf = 0.0; best_msg = None
                 for i in range(len(fine_angles)):
                     mp_t = torch.sigmoid(preds_f[i:i+1, 0:1, :, :])
                     bp_t = preds_f[i:i+1, 1:, :, :]
-                    acc = (mp_infer(bp_t, mp_t, method="semihard").float() == msg).float().mean().item()
-                    if acc > best_acc: best_acc = acc
-
-                bit_acc = best_acc
+                    pred_msg = mp_infer(bp_t, mp_t, method="semihard").float()
+                    conf = mp_t.mean().item()
+                    if conf > best_conf: best_conf = conf; best_msg = pred_msg
+                bit_acc = (best_msg == msg).float().mean().item() if best_msg is not None else 0.0
             else:
                 attacked = apply_geo_attack(attack_name, img_w, unnorm, dft, device, args.use_derotation)
 
                 if args.use_multi_scale:
-                    best_acc = 0.0
+                    best_conf = 0.0; best_msg = None
                     for scale in SCALES:
-                        pred_msg, _ = decode_at_scale(attacked, scale, wam, mp_infer, device, unnorm, dft)
-                        acc = (pred_msg == msg).float().mean().item()
-                        if acc > best_acc: best_acc = acc
-                    bit_acc = best_acc
+                        pred_msg, conf = decode_at_scale(attacked, scale, wam, mp_infer, device, unnorm, dft)
+                        if conf > best_conf: best_conf = conf; best_msg = pred_msg
+                    bit_acc = (best_msg == msg).float().mean().item() if best_msg is not None else 0.0
                 else:
                     preds = wam.detect(attacked)["preds"]
                     mp_t = torch.sigmoid(preds[:,0:1,:,:]); bp_t = preds[:,1:,:,:]

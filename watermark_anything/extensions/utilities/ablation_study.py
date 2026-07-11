@@ -103,7 +103,7 @@ def detect_single(attacked_pt, wam, mp_infer, target_msg):
 
 
 def detect_ms(attacked_pt, wam, mp_infer, device, unnorm, dft, target_msg):
-    _,_,h,w=attacked_pt.shape; best=None; best_acc=0.0
+    _,_,h,w=attacked_pt.shape; best=None; best_conf=0.0
     for scale in SCALES:
         if abs(scale-1.0)<1e-6: scaled=attacked_pt
         else:
@@ -115,8 +115,9 @@ def detect_ms(attacked_pt, wam, mp_infer, device, unnorm, dft, target_msg):
         preds=wam.detect(scaled)["preds"]
         mp_t=torch.sigmoid(preds[:,0:1,:,:]); bp_t=preds[:,1:,:,:]
         pred_msg=mp_infer(bp_t,mp_t,method="semihard").float()
-        acc=(pred_msg==target_msg).float().mean().item()
-        if acc>best_acc: best_acc=acc; best=pred_msg
+        conf=mp_t.mean().item()
+        if conf>best_conf: best_conf=conf; best=pred_msg
+    best_acc=(best==target_msg).float().mean().item() if best is not None else 0.0
     return best, best_acc
 
 
@@ -124,12 +125,13 @@ def detect_geo(attacked_pt, wam, mp_infer, device, unnorm, dft, target_msg):
     cands=[rotate_tensor_gpu(attacked_pt,-a) for a in GEO_ANGLES]
     batch=torch.cat(cands,dim=0)
     preds_b=wam.detect(batch)["preds"]
-    best=0.0
+    best_conf=0.0; best_msg=None
     for i in range(len(GEO_ANGLES)):
         mp_t=torch.sigmoid(preds_b[i:i+1,0:1,:,:]); bp_t=preds_b[i:i+1,1:,:,:]
-        acc=(mp_infer(bp_t,mp_t,method="semihard").float()==target_msg).float().mean().item()
-        if acc>best: best=acc
-    return best
+        pred_msg=mp_infer(bp_t,mp_t,method="semihard").float()
+        conf=mp_t.mean().item()
+        if conf>best_conf: best_conf=conf; best_msg=pred_msg
+    return (best_msg==target_msg).float().mean().item() if best_msg is not None else 0.0
 
 
 def ecc_encode_rep4(payload):

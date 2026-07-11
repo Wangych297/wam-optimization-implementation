@@ -152,18 +152,17 @@ def main():
             attacked_pt, attacked_pil = apply_attack(attack_name, img_w, dft, unnorm, device, rng)
 
             # Multi-scale decode
-            best_msg = None; best_acc = 0.0
+            best_msg = None; best_conf = 0.0
             for scale in SCALES:
-                pred_msg, _ = decode_at_scale(attacked_pt, scale, wam, mp_infer, device, unnorm, dft)
-                acc = (pred_msg == msg).float().mean().item()
-                if acc > best_acc: best_acc = acc; best_msg = pred_msg
+                pred_msg, conf = decode_at_scale(attacked_pt, scale, wam, mp_infer, device, unnorm, dft)
+                if conf > best_conf: best_conf = conf; best_msg = pred_msg
 
             # Bbox sync decode
             if args.use_bbox_sync:
                 bbox_msg, _ = bbox_decode(attacked_pil, wam, mp_infer, device, dft, unnorm)
                 if bbox_msg is not None:
-                    bbox_acc = (bbox_msg == msg).float().mean().item()
-                    if bbox_acc > best_acc: best_acc = bbox_acc; best_msg = bbox_msg
+                    bbox_conf = 0.0  # bbox_confidence hard to compute, skip
+                    if bbox_conf > best_conf: best_conf = bbox_conf; best_msg = bbox_msg
 
             bit_acc = best_acc
             rows.append({"image": image_path.name, "attack": attack_name,

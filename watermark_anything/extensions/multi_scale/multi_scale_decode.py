@@ -272,8 +272,9 @@ def main() -> int:
 
                 # Multi-scale decode (experimental)
                 if args.use_multi_scale:
-                    best_acc = bit_acc_single
+                    best_conf = mask_preds.mean().item()
                     best_scale = 1.0
+                    best_msg = pred_msg_single
                     for scale in MULTI_SCALE_FACTORS:
                         if abs(scale - 1.0) < 1e-6:
                             continue  # already tested
@@ -281,10 +282,11 @@ def main() -> int:
                             attacked, scale, wam, msg_predict_inference, device,
                             unnormalize_img, default_transform
                         )
-                        bit_acc_multi = (pred_msg_multi == msg).float().mean().item()
-                        if bit_acc_multi > best_acc:
-                            best_acc = bit_acc_multi
+                        if conf > best_conf:
+                            best_conf = conf
                             best_scale = scale
+                            best_msg = pred_msg_multi
+                    best_acc = (best_msg == msg).float().mean().item() if best_msg is not None else bit_acc_single
 
                     row_multi = {
                         "image": image_path.name,

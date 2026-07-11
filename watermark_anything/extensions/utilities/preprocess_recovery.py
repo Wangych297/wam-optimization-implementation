@@ -139,8 +139,8 @@ def main():
                 best_acc = 0.0
                 for scale in SCALES:
                     pred_msg, _ = decode_at_scale(attacked_pt, scale, wam, mp_infer, device, unnorm, dft)
-                    acc = (pred_msg == msg).float().mean().item()
-                    if acc > best_acc: best_acc = acc
+                    conf = mp_t.mean().item()
+                    if conf > best_conf: best_conf = conf
                 base_acc = best_acc
             else:
                 preds = wam.detect(attacked_pt)["preds"]

@@ -255,11 +255,10 @@ def main():
 
             # Multi-scale decode (or adaptive single-scale)
             scales_to_try = get_scales_for_attack(attack_name, args.adaptive_scale)
-            best_acc = 0.0; best_msg = None
+            best_conf = 0.0; best_msg = None
             for scale in scales_to_try:
-                pred_msg, _ = decode_at_scale(attacked, scale, wam, mp_infer, device, unnorm, dft)
-                acc = (pred_msg == wam_msg).float().mean().item()
-                if acc > best_acc: best_acc = acc; best_msg = pred_msg
+                pred_msg, conf = decode_at_scale(attacked, scale, wam, mp_infer, device, unnorm, dft)
+                if conf > best_conf: best_conf = conf; best_msg = pred_msg
 
             if args.use_ecc and best_msg is not None:
                 pred_bits = best_msg.int().view(-1).tolist()
